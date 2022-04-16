@@ -262,7 +262,7 @@ struct VMDImportOptions
 	USkeleton* SkeletonForAnimation;
 	USkeletalMesh* SkeletalMeshForAnimation;
 	//EFBXAnimationLengthImportType AnimationLengthImportType;
-	struct FIntPoint AnimationRange;
+	FIntPoint AnimationRange;
 	FString AnimationName;
 
 	UAnimSequence* AnimSequenceAsset;

@@ -386,7 +386,7 @@ struct PMXImportOptions
 	// Animation option
 	USkeleton* SkeletonForAnimation;
 	//EFBXAnimationLengthImportType AnimationLengthImportType;
-	struct FIntPoint AnimationRange;
+	FIntPoint AnimationRange;
 	FString AnimationName;
 	bool	bPreserveLocalTransform;
 	bool	bImportCustomAttribute;

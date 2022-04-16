@@ -517,12 +517,23 @@ UAnimSequence * UVmdFactory::ImportAnimations(
 		//LastCreatedAnim->RefreshTrackMapFromAnimTrackNames();
 		if (false)
 		{
-			LastCreatedAnim->BakeTrackCurvesToRawAnimation();
+			//LastCreatedAnim->BakeTrackCurvesToRawAnimation();
 		}
 		else
 		{
 			// otherwise just compress
-			LastCreatedAnim->PostProcessSequence();
+			//LastCreatedAnim->PostProcessSequence();
+
+			SkeletalMesh->MarkPackageDirty();
+
+
+
+			LastCreatedAnim->PostEditChange();
+			LastCreatedAnim->SetPreviewMesh(SkeletalMesh);
+			LastCreatedAnim->MarkPackageDirty();
+
+			Skeleton->SetPreviewMesh(SkeletalMesh);
+			Skeleton->PostEditChange();
 		}
 	}
 
@@ -607,12 +618,23 @@ UAnimSequence * UVmdFactory::AddtionalMorphCurveImportToAnimations(
 		//exsistAnimSequ->RefreshTrackMapFromAnimTrackNames();
 		if (existAsset)
 		{
-			exsistAnimSequ->BakeTrackCurvesToRawAnimation();
+			//exsistAnimSequ->BakeTrackCurvesToRawAnimation();
 		}
 		else
 		{
 			// otherwise just compress
-			exsistAnimSequ->PostProcessSequence();
+			//exsistAnimSequ->PostProcessSequence();
+			
+
+			SkeletalMesh->MarkPackageDirty();
+
+
+			exsistAnimSequ->PostEditChange();
+			exsistAnimSequ->SetPreviewMesh(SkeletalMesh);
+			exsistAnimSequ->MarkPackageDirty();
+
+			Skeleton->SetPreviewMesh(SkeletalMesh);
+			Skeleton->PostEditChange();
 		}
 	}
 
@@ -791,9 +813,8 @@ bool UVmdFactory::ImportVMDToAnimSequence(
 	//UAnimDataController* uc = new UAnimDataController();
 	/********************************/
 
-	double fps=DestSeq->GetFrameRate();
+	//double fps=DestSeq->GetFrameRate();
 	auto &adc = DestSeq->GetController();
-	DestSeq->SetRawNumberOfFrame(vmdMotionInfo->maxFrame);
 
 	adc.SetFrameRate(FFrameRate(30, 1));// DestSeq->SetRawNumberOfFrame(vmdMotionInfo->maxFrame);
 	adc.NotifyPopulated();
@@ -1999,13 +2020,15 @@ FTransform UVmdFactory::CalcGlbTransformFromBoneIndex(
 		//error root
 		return FTransform::Identity;
 	}
- 
- 
+
+	auto& dat = DestSeq->GetDataModel()->GetBoneAnimationTracks()[BoneIndex].InternalTrackData;
+
 	FTransform resultTrans(
-		FQuat(DestSeq->GetRawAnimationData()[BoneIndex].RotKeys[keyIndex]),// qt.X, qt.Y, qt.Z, qt.W),
-		FVector(DestSeq->GetRawAnimationData()[BoneIndex].PosKeys[keyIndex]),
-		FVector(DestSeq->GetRawAnimationData()[BoneIndex].ScaleKeys[keyIndex])
-		);
+		FQuat(dat.RotKeys[keyIndex]),// qt.X, qt.Y, qt.Z, qt.W),
+		FVector(dat.PosKeys[keyIndex]),
+		FVector(dat.ScaleKeys[keyIndex])
+	);
+
 	int ParentBoneIndex = Skeleton->GetReferenceSkeleton().GetParentIndex(BoneIndex);
 	if (ParentBoneIndex >= 0)
 	{
