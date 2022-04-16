@@ -1,0 +1,43 @@
+float3 pos3D;
+float3 viewDir;
+float3 normal;
+float3 lightDir;
+float3 lightdiffuseColor;
+float  lightdiffusePower;
+float3 lightspecularColor;
+float lightspecularPower;
+float specularHardness;
+float3 Amibent;
+
+//Blinn_Phong光照函数代码来源：https://en.wikipedia.org/wiki/Blinn%E2%80%93Phong_reflection_model
+
+float3 Diffuse;
+float3 Specular;
+
+ 
+	{
+
+		lightDir = normalize(lightDir);
+
+		//Intensity of the diffuse light. Saturate to keep within the 0-1 range.
+		float NdotL = dot(normal, lightDir);
+		float intensity = saturate(NdotL);
+
+		// Calculate the diffuse light factoring in light color, power and the attenuation
+		Diffuse = intensity * lightdiffuseColor * lightdiffusePower;
+
+		//Calculate the half vector between the light vector and the view vector.
+		//This is typically slower than calculating the actual reflection vector
+		// due to the normalize function's reciprocal square root
+		float3 H = normalize(lightDir + viewDir);
+
+		//Intensity of the specular light
+		float NdotH = dot(normal, H);
+		intensity = pow(saturate(NdotH), specularHardness);
+
+		//Sum up the specular light factoring
+		Specular = intensity * lightspecularColor * lightspecularPower ;
+
+	};
+ 
+	return Amibent +Diffuse+Specular;
