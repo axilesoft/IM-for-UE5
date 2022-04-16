@@ -523,7 +523,19 @@ UAnimSequence * UVmdFactory::ImportAnimations(
 		{
 			// otherwise just compress
 			//LastCreatedAnim->PostProcessSequence();
+			auto& adc = LastCreatedAnim->GetController();
+			adc.OpenBracket(LOCTEXT("ImportAsSkeletalMesh", "Importing VMD Animation"));
 
+			//Controller.SetPlayLength(AbcFile->GetImportLength());
+			//Controller.SetFrameRate(FFrameRate(AbcFile->GetFramerate(), 1));
+
+			adc.UpdateCurveNamesFromSkeleton(Skeleton, ERawCurveTrackTypes::RCT_Float);
+			adc.NotifyPopulated();
+
+			adc.CloseBracket();
+
+				// mark package as dirty
+				MarkPackageDirty();
 			SkeletalMesh->MarkPackageDirty();
 
 
@@ -625,8 +637,21 @@ UAnimSequence * UVmdFactory::AddtionalMorphCurveImportToAnimations(
 			// otherwise just compress
 			//exsistAnimSequ->PostProcessSequence();
 			
+			auto& adc = exsistAnimSequ->GetController();
+			adc.OpenBracket(LOCTEXT("ImportAsSkeletalMesh", "Importing VMD Animation"));
 
+			//Controller.SetPlayLength(AbcFile->GetImportLength());
+			//Controller.SetFrameRate(FFrameRate(AbcFile->GetFramerate(), 1));
+
+			adc.UpdateCurveNamesFromSkeleton(Skeleton, ERawCurveTrackTypes::RCT_Float);
+			adc.NotifyPopulated();
+
+			adc.CloseBracket();
+
+			// mark package as dirty
+			MarkPackageDirty();
 			SkeletalMesh->MarkPackageDirty();
+
 
 
 			exsistAnimSequ->PostEditChange();
