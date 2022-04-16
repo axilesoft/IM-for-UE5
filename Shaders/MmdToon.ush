@@ -1,0 +1,53 @@
+float3  Pos;
+float3  wNormal;
+float   Alpha;
+float3  Diffuse;
+float3  Ambient;
+float3  Specular;
+float   SpecularPower;
+float3  LightColor;
+float3  LightDir;
+float3  toonColor;
+float4  texColor;
+
+
+ 
+float3 eyeDir = normalize(Pos);
+float3 lightDir = normalize(LightDir);
+float3 nor = normalize(wNormal);
+
+    float3 color = float3(0.0, 0.0, 0.0);
+    float alpha = Alpha;
+    float3 diffuseColor = Diffuse * LightColor;
+    color = diffuseColor;
+    color += Ambient;
+    color = clamp(color, 0.0, 1.0);
+int     TexMode=1;
+int     ToonTexMode=1; 
+
+if (TexMode != 0)
+{
+
+    color *= texColor.rgb;
+    if (TexMode == 2)
+    {
+        alpha *= texColor.a;
+    }
+}
+ 
+
+if (ToonTexMode != 0)
+{
+   // color *= toonColor;
+}
+
+float3 specular = (float3)0.0;
+if (SpecularPower > 0.99)
+{
+    float3 halfVec = normalize(eyeDir + lightDir);
+    float3 specularColor = Specular * LightColor;
+    specular += pow(max(0.0, dot(halfVec, nor)), SpecularPower) * specularColor;
+}
+color += specular;
+
+return float4(color, alpha);
