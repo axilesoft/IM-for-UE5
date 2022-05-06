@@ -36,7 +36,7 @@ class UPmxMaterialImport
 	 * モデルインポート時に生成するマテリアルの複製元のアセットパス
 	 * ※将来的にはPJ固有の設定パスを持たせられればと
 	 */
-#define D_IM4U_MMDBaseMat_Path_Normal "/IM4U/Material/M_MMD_MatBase_Toon.M_MMD_MatBase_Toon"
+#define D_IM4U_MMDBaseMat_Path_Normal "/IM4U/Material/M_MMD_Toon.M_MMD_Toon"
 #define D_IM4U_MMDBaseMat_Path_Luminou "/IM4U/Material/M_MMD_MatBase_Luminous.M_MMD_MatBase_Luminous"
 #define D_IM4U_MMDBaseMat_Path_Unlit_Normal "/IM4U/Material/M_MMD_MatBase_UnLit.M_MMD_MatBase_UnLit"
 #define D_IM4U_MMDBaseMat_Path_Unlit_Luminou "/IM4U/Material/M_MMD_MatBase_UnLit_Luminus.M_MMD_MatBase_UnLit_Luminus"
