@@ -1120,10 +1120,13 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 						 
 						FConstraintInstance &cs = NewPhysicsAsset->ConstraintSetup[i]->DefaultInstance;
 						//cs.ProfileInstance.AngularDrive.AngularDriveMode = EAngularDriveMode::TwistAndSwing;
-						cs.ProfileInstance.ConeLimit.Swing1Motion = EAngularConstraintMotion::ACM_Locked;
-						cs.ProfileInstance.ConeLimit.Swing2Motion = EAngularConstraintMotion::ACM_Locked;
-						cs.ProfileInstance.TwistLimit.TwistMotion = EAngularConstraintMotion::ACM_Locked;
+						cs.ProfileInstance.ConeLimit.Swing1Motion = EAngularConstraintMotion::ACM_Limited;
+						cs.ProfileInstance.ConeLimit.Swing2Motion = EAngularConstraintMotion::ACM_Limited;
+						cs.ProfileInstance.TwistLimit.TwistMotion = EAngularConstraintMotion::ACM_Limited;
 						cs.ProfileInstance.TwistLimit.TwistLimitDegrees = 0;
+						cs.ProfileInstance.ConeLimit.Swing1LimitDegrees = 25;
+						cs.ProfileInstance.ConeLimit.Swing2LimitDegrees = 5;
+
 						cs.SetDisableCollision(true);
 					}
 
