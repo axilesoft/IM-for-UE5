@@ -1,4 +1,4 @@
-﻿# IM4U
+﻿# IM for UE5
 
 Import [MikuMikuDance (MMD)](https://sites.google.com/view/vpvp/) models and motion files plugin for Unreal Engine 4.
 
@@ -14,7 +14,7 @@ Original repository contributors:
 
 This software is released under the MIT License.
 
-This repository is public and doesn't requires a GitHub account with access to Unreal Engine 4 source code to see it. You can add this repository as a git submodule directly into your Unreal Engine 4 project plugins folder.
+This repository is public and doesn't requires a GitHub account with access to Unreal Engine 4 source code to see it. You can add this repository as a git submodule directly into your Unreal Engine 4 project plugins folder.Cancel changes
 
 Latest Unreal Engine 4 version tested: **4.25.1**
 
