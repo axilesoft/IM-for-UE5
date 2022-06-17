@@ -13,6 +13,8 @@ tmp/
 *.bak
 *.swp
 *~.nib
+*.lib
+*.pdb
 local.properties
 .classpath
 .settings/
