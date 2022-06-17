@@ -1,7 +1,9 @@
 ﻿# IMPORT MMD for UE5
- 
- for the UE5 main branch.
- 
+ - for the UE5 main branch.
+ - import PMX/VMD to UE5
+ - Fixed material importing
+ - Fixed morph importing
+ - Fixed vmd importing slow problem
 
 # ORIGINAL README
 
