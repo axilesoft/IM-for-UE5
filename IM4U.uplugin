@@ -1,9 +1,9 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "0.7.8",
+	"VersionName": "0.7.9",
 	"FriendlyName": "IM4U",
-	"Description": "Import MMD models and motion files plugin for Unreal Engine 4.",
+	"Description": "Import MMD models and motion files plugin for Unreal Engine 5.",
 	"Category": "Import",
 	"CreatedBy": "bm9",
 	"CreatedByURL": "",
