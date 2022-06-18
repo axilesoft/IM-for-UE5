@@ -4,6 +4,7 @@
  - Fixed material importing
  - Fixed morph importing
  - Fixed vmd importing slow problem
+ - Generate rigid body based on pmx physics data
 
 # ORIGINAL README
 
