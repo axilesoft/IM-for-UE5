@@ -10,7 +10,11 @@
 #include "IDocumentation.h"
 #include "PropertyEditorModule.h"
 #include "IDetailsView.h"
-
+#include "UObject/UObjectGlobals.h"
+#include "Styling/SlateColor.h"
+#include "Styling/SlateStyle.h"
+#include "Styling/SlateTypes.h"
+#include "EditorStyleSet.h"
 #define LOCTEXT_NAMESPACE "PMXOption"
 
 void SPmxOptionWindow::Construct(const FArguments& InArgs)

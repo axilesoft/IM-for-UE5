@@ -1332,7 +1332,7 @@ UMaterialInterface* UPmxMaterialImport::CreateMaterialInst_Masked(
 			Param.Value = true;
 			Param.bOverride = true;
 			
-			StaticParams.EditorOnly.StaticSwitchParameters.Add(Param);
+			StaticParams.EditorOnly.StaticSwitchParameters_DEPRECATED.Add(Param);
 
 			UE_LOG(LogCategoryPMXMaterialImport, Log, TEXT("[%s]:Base Texure mode enable "), *(FString(__FUNCTION__)));
 		}
@@ -1359,7 +1359,7 @@ UMaterialInterface* UPmxMaterialImport::CreateMaterialInst_Masked(
 			Param.ParameterInfo.Name = FName(D_IM4U_MatInst_Name_isToonEnable);
 			Param.Value = true;
 			Param.bOverride = true;
-			StaticParams.EditorOnly.StaticSwitchParameters.Add(Param);
+			StaticParams.StaticSwitchParameters.Add(Param);
 
 			UE_LOG(LogCategoryPMXMaterialImport, Log, TEXT("[%s]:Toon Texure mode enable "), *(FString(__FUNCTION__)));
 		}
@@ -1398,7 +1398,7 @@ UMaterialInterface* UPmxMaterialImport::CreateMaterialInst_Masked(
 	}
 
 	// StaticSwitchの適用 複数まとめて
-	if (0 < StaticParams.EditorOnly.StaticSwitchParameters.Num())
+	if (0 < StaticParams.StaticSwitchParameters.Num())
 	{
 		pUMIC->UpdateStaticPermutation(StaticParams);
 	}
@@ -1460,7 +1460,7 @@ UMaterialInterface* UPmxMaterialImport::CreateMaterialInst_Masked_Unlit(
 		Param.ParameterInfo.Name = FName(D_IM4U_MatInst_Name_isTextureEnable);
 		Param.Value = true;
 		Param.bOverride = true;
-		StaticParams.EditorOnly.StaticSwitchParameters.Add(Param);
+		StaticParams.StaticSwitchParameters.Add(Param);
 
 		UE_LOG(LogCategoryPMXMaterialImport, Log, TEXT("[%s]:MIC Texure mode enable "), *(FString(__FUNCTION__)));
 	}
@@ -1498,7 +1498,7 @@ UMaterialInterface* UPmxMaterialImport::CreateMaterialInst_Masked_Unlit(
 	}
 
 	// StaticSwitchの適用 複数まとめて
-	if (0 < StaticParams.EditorOnly.StaticSwitchParameters.Num())
+	if (0 < StaticParams.StaticSwitchParameters.Num())
 	{
 		pUMIC->UpdateStaticPermutation(StaticParams);
 	}
@@ -1561,7 +1561,7 @@ UMaterialInterface* UPmxMaterialImport::CreateMaterialInst_Luminous(
 		Param.ParameterInfo.Name = FName(D_IM4U_MatInst_Name_isTextureEnable);
 		Param.Value = true;
 		Param.bOverride = true;
-		StaticParams.EditorOnly.StaticSwitchParameters.Add(Param);
+		StaticParams.StaticSwitchParameters.Add(Param);
 
 		UE_LOG(LogCategoryPMXMaterialImport, Log, TEXT("[%s]:MIC Texure mode enable "), *(FString(__FUNCTION__)));
 	}
@@ -1611,7 +1611,7 @@ UMaterialInterface* UPmxMaterialImport::CreateMaterialInst_Luminous(
 	}
 
 	// StaticSwitchの適用 複数まとめて
-	if (0 < StaticParams.EditorOnly.StaticSwitchParameters.Num())
+	if (0 < StaticParams.StaticSwitchParameters.Num())
 	{
 		pUMIC->UpdateStaticPermutation(StaticParams);
 	}
@@ -1674,7 +1674,7 @@ UMaterialInterface* UPmxMaterialImport::CreateMaterialInst_Luminous_Unlit(
 		Param.ParameterInfo.Name = FName(D_IM4U_MatInst_Name_isTextureEnable);
 		Param.Value = true;
 		Param.bOverride = true;
-		StaticParams.EditorOnly.StaticSwitchParameters.Add(Param);
+		StaticParams.StaticSwitchParameters.Add(Param);
 
 		UE_LOG(LogCategoryPMXMaterialImport, Log, TEXT("[%s]:MIC Texure mode enable "), *(FString(__FUNCTION__)));
 	}
@@ -1724,7 +1724,7 @@ UMaterialInterface* UPmxMaterialImport::CreateMaterialInst_Luminous_Unlit(
 	}
 
 	// StaticSwitchの適用 複数まとめて
-	if (0 < StaticParams.EditorOnly.StaticSwitchParameters.Num())
+	if (0 < StaticParams.StaticSwitchParameters.Num())
 	{
 		pUMIC->UpdateStaticPermutation(StaticParams);
 	}
