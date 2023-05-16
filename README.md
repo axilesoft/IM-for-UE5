@@ -1,5 +1,7 @@
 PMX still work in UE5.2 https://youtu.be/BEjDlk0Z9go
-see https://github.com/axilesoft/IM-for-UE5/tree/NoVmd
+
+branch https://github.com/axilesoft/IM-for-UE5/tree/NoVmd
+
 ------------
 # IMPORT MMD for UE5
  - for the UE5 main branch.
