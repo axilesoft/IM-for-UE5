@@ -1,6 +1,6 @@
 ﻿PMX still work in UE5.2 https://youtu.be/BEjDlk0Z9go
 
-
+VMD waiting UE5.2 to fix UnrealEditor-AnimationData lost
 -------------------------------------
  # IMPORT MMD for UE5
  - for the UE5 main branch.
