@@ -1,4 +1,8 @@
-﻿# IMPORT MMD for UE5
+﻿PMX still work in UE5.2 https://youtu.be/BEjDlk0Z9go
+
+
+-------------------------------------
+ # IMPORT MMD for UE5
  - for the UE5 main branch.
  - import PMX/VMD to UE5
  - Fixed material importing
