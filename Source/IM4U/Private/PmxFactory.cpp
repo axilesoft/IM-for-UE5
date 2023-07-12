@@ -758,7 +758,7 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 		for (TObjectIterator<USkeletalMeshComponent> It; It; ++It)
 		{
 			USkeletalMeshComponent* SkelComp = *It;
-			if (SkelComp->SkeletalMesh == SkeletalMesh)
+			if (SkelComp->GetSkeletalMeshAsset() == SkeletalMesh)
 			{
 				FComponentReregisterContext ReregisterContext(SkelComp);
 			}
