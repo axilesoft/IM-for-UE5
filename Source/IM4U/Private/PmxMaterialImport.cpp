@@ -5,7 +5,7 @@
 
 #include "CoreMinimal.h"
 #include "ComponentReregisterContext.h"
-#include "AssetRegistryModule.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetToolsModule.h"
 
 #include "ContentBrowserModule.h"

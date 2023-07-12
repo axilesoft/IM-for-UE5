@@ -11,7 +11,7 @@
 //#include "FbxImporter.h"
 
 //#include "Misc/FbxErrors.h"
-#include "AssetRegistryModule.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "Engine/StaticMesh.h"
 
 /////////////////////////
@@ -25,7 +25,7 @@
 #include "AnimEncoding.h"
 #include "SSkeletonWidget.h"
 
-#include "AssetRegistryModule.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetNotifications.h"
 
 #include "ObjectTools.h"
