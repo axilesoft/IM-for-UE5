@@ -61,9 +61,10 @@ namespace UnrealBuildTool.Rules
 			{
 				PublicAdditionalLibraries.Add("/usr/lib/libiconv.dylib");
 			}
-			
-			
-			PublicIncludePaths.AddRange(
+
+			string LibGLMPath = Path.Combine(ThirdPartyPath, "glm");
+
+            PublicIncludePaths.AddRange(
                 new string[] {
 					// ... add public include paths required here ...
 				}
@@ -72,8 +73,7 @@ namespace UnrealBuildTool.Rules
 			PrivateIncludePaths.AddRange(
                 new string[] {
                     "IM4U/Private",
-
-					"D:/AProj/UaIrrlicht/external/glm"
+                    LibGLMPath
 					// ... add other private include paths required here ...
 				}
                 );
