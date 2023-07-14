@@ -1,12 +1,17 @@
 Still work in UE5.2 https://youtu.be/BEjDlk0Z9go
-
+UE 5.2.1 Release checked
 ------------
 # IMPORT MMD for UE5
- - import PMX/VMD to UE5
+
+Main improvement
+ - Import PMX/VMD to UE5
  - Fixed material importing
  - Fixed morph importing
  - Fixed vmd importing slow problem
  - Generate rigid body based on pmx physics data
+
+Not supported yet
+ - Leg IK (Control Rig auto generating)   
 
 # ORIGINAL README
 
