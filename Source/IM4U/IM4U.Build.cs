@@ -73,7 +73,7 @@ namespace UnrealBuildTool.Rules
                 new string[] {
                     "IM4U/Private",
 
-					"S:/AProj/UaIrrlicht/external/glm"
+					"D:/AProj/UaIrrlicht/external/glm"
 					// ... add other private include paths required here ...
 				}
                 );
@@ -98,7 +98,9 @@ namespace UnrealBuildTool.Rules
                     "RHI",
                     "RenderCore",
                     "ContentBrowser",
-					"PhysicsUtilities","SkeletalMeshUtilitiesCommon"
+					"AnimationDataController",
+
+                    "PhysicsUtilities","SkeletalMeshUtilitiesCommon"
 					// ... add other public dependencies that you statically link with here ...
 				}
 				);

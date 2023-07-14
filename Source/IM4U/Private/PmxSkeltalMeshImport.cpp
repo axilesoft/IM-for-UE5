@@ -41,8 +41,11 @@
 
 #include "LODUtilities.h"
 #define LOCTEXT_NAMESPACE "PMXSkeltalMeshImpoter"
+#if USE_ENG_NAME
 extern TMap<FName, FName> NameMap;
 void initMmdNameMap();
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // FMorphMeshRawSource is removed after version 4.16. So added for only this plugin here.
 // Converts a mesh to raw vertex data used to generate a morph target mesh
@@ -400,8 +403,9 @@ bool UPmxFactory::ImportBone(
 	int32 NumberOfRoot = 0;
 
 	int32 RootIdx = -1;
+#if USE_ENG_NAME
 	initMmdNameMap();
-
+#endif
 	for (int LinkIndex = 0; LinkIndex < PmxMeshInfo->boneList.Num(); LinkIndex++)
 	{
 		// Add a bone for each FBX Link

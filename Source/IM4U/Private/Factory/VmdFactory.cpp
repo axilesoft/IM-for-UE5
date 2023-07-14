@@ -742,14 +742,13 @@ bool UVmdFactory::ImportMorphCurveToAnimSequence(
 		// FloatCurve for Morph Target 
 		int CurveFlags = AACF_DriveMorphTarget_DEPRECATED;
 
-		FFloatCurve * CurveToImport
-			= static_cast<FFloatCurve *>(DestSeq->RawCurveData.GetCurveData(NewName.UID, ERawCurveTrackTypes::RCT_Float));
+		FFloatCurve * CurveToImport = (FFloatCurve*)DestSeq->GetCurveData().GetCurveData(NewName.UID);
 		if (CurveToImport == NULL)
 		{
-			if (DestSeq->RawCurveData.AddCurveData(NewName, CurveFlags))
+			if ( ((FRawCurveTracks*)(&DestSeq->GetCurveData()))->AddCurveData(NewName))
 			{
 				CurveToImport
-					= static_cast<FFloatCurve *> (DestSeq->RawCurveData.GetCurveData(NewName.UID, ERawCurveTrackTypes::RCT_Float));
+					= (FFloatCurve*)(DestSeq->GetCurveData().GetCurveData(NewName.UID));
 				CurveToImport->Name = NewName;
 			}
 			else
@@ -775,7 +774,7 @@ bool UVmdFactory::ImportMorphCurveToAnimSequence(
 			check(faceKeyPtr);
 			/********************************************/
 			float timeCurve = faceKeyPtr->Frame / 30.0f;
-			if (timeCurve > DestSeq->SequenceLength)
+			if (timeCurve > DestSeq->GetPlayLength())
 			{
 				//this key frame(time) more than Target SeqLength ... 
 				break;
@@ -785,10 +784,10 @@ bool UVmdFactory::ImportMorphCurveToAnimSequence(
 		}
 
 		// update last observed name. If not, sometimes it adds new UID while fixing up that will confuse Compressed Raw Data
-		const FSmartNameMapping* Mapping = Skeleton->GetSmartNameContainer(USkeleton::AnimCurveMappingName);
-		DestSeq->RawCurveData.RefreshName(Mapping);
+		//const FSmartNameMapping* Mapping = Skeleton->GetSmartNameContainer(USkeleton::AnimCurveMappingName);
+		//DestSeq->GetCurveData().RefreshName(Mapping);
 
-		DestSeq->MarkRawDataAsModified();
+		//DestSeq->MarkRawDataAsModified();
 		/***********************************************************************************/
 		// Trace Log ( for debug message , compleat import morph of this track )
 		if (true)
@@ -839,13 +838,22 @@ bool UVmdFactory::ImportVMDToAnimSequence(
 	/********************************/
 
 	//double fps=DestSeq->GetFrameRate();
-	auto &adc = DestSeq->GetController();
+	auto &adc = DestSeq->GetController(); 
 
+	const bool bShouldTransact = true;
+	adc.OpenBracket(LOCTEXT("ImportAsSkeletalMesh", "Importing VMD Animation"), bShouldTransact);
+
+	adc.InitializeModel();
+
+
+
+	auto fr = FFrameRate(30, 1);
 	adc.SetFrameRate(FFrameRate(30, 1));// DestSeq->SetRawNumberOfFrame(vmdMotionInfo->maxFrame);
-	adc.NotifyPopulated();
-	adc.SetPlayLength(FGenericPlatformMath::Max<float>(1.0f / 30.0f * (float)vmdMotionInfo->maxFrame, MINIMUM_ANIMATION_LENGTH));
-
+	adc.SetNumberOfFrames(fr.AsFrameNumber(vmdMotionInfo->maxFrame));
 	
+	adc.SetPlayLength(FGenericPlatformMath::Max<float>(1.0f / 30.0f * (float)vmdMotionInfo->maxFrame, MINIMUM_ANIMATION_LENGTH));
+	adc.NotifyPopulated();
+	adc.CloseBracket();
 	//DestSeq->SequenceLength = FGenericPlatformMath::Max<float>(1.0f / 30.0f * (float)vmdMotionInfo->maxFrame, MINIMUM_ANIMATION_LENGTH);
 	/////////////////////////////////
 	const int32 NumBones = Skeleton->GetReferenceSkeleton().GetNum();
@@ -854,6 +862,7 @@ bool UVmdFactory::ImportVMDToAnimSequence(
 	DestSeq->AnimationTrackNames.AddUninitialized(NumBones);
 #endif
 
+	adc.OpenBracket(LOCTEXT("ImportAsSkeletalMesh", "Importing VMD Animation"), bShouldTransact);
 
 	const TArray<FTransform>& RefBonePose = Skeleton->GetReferenceSkeleton().GetRefBonePose();
 
@@ -1843,7 +1852,7 @@ bool UVmdFactory::ImportVMDToAnimSequence(
 		}
 	}
 #endif /* :UE414: 4.14のAnimationクラス仕様変更による機能制限 */
-	adc.OpenBracket(LOCTEXT("AddNewRawTrack_Bracket", "Adding new Bone Animation Track"));
+
 	/* AddTrack */
 	for (int32 BoneIndex = 0; BoneIndex < NumBones; ++BoneIndex)
 	{
@@ -1856,8 +1865,8 @@ bool UVmdFactory::ImportVMDToAnimSequence(
 		int32 NewTrackIndex = INDEX_NONE;
 		if (RawTrack.PosKeys.Num()>1)
 		{
-			NewTrackIndex = adc.AddBoneTrack(BoneName);
-			if (NewTrackIndex != INDEX_NONE )
+	
+			if (adc.AddBoneCurve(BoneName))
 			{
 				adc.SetBoneTrackKeys(BoneName, RawTrack.PosKeys, RawTrack.RotKeys, RawTrack.ScaleKeys);
 			}
@@ -1865,6 +1874,8 @@ bool UVmdFactory::ImportVMDToAnimSequence(
 
 
 	}
+
+	adc.NotifyPopulated();
 	adc.CloseBracket();
 	//GWarn->EndSlowTask();
 	return true;
