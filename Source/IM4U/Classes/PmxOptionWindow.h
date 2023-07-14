@@ -5,7 +5,7 @@
 #pragma once
 
 #include "SlateBasics.h"
-#include "AssetRegistryModule.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 
 #include "PmxImportUI.h"
 
