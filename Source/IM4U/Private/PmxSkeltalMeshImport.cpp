@@ -11,7 +11,7 @@
 //#include "FbxImporter.h"
 
 #include "Misc/FbxErrors.h"
-#include "AssetRegistryModule.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "Engine/StaticMesh.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Rendering/SkeletalMeshModel.h"
@@ -25,7 +25,7 @@
 #include "AnimEncoding.h"
 #include "SSkeletonWidget.h"
 
-#include "AssetRegistryModule.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetNotifications.h"
 
 #include "ObjectTools.h"
@@ -1723,10 +1723,11 @@ void UPmxFactory::AddTokenizedErrorMessage(
 		case EMessageSeverity::Error:
 			UE_LOG(LogMMD4UE4_PMXFactory, Error, TEXT("%d_%s"), __LINE__, *(ErrorMsg->ToText().ToString()));
 			break;
-		case EMessageSeverity::CriticalError:
-			UE_LOG(LogMMD4UE4_PMXFactory, Error, TEXT("%d_%s"), __LINE__, *(ErrorMsg->ToText().ToString()));
-			break;
+		//case EMessageSeverity::CriticalError:
+		//	UE_LOG(LogMMD4UE4_PMXFactory, Error, TEXT("%d_%s"), __LINE__, *(ErrorMsg->ToText().ToString()));
+		//	break; 
 		case EMessageSeverity::Warning:
+		case EMessageSeverity::PerformanceWarning:
 			UE_LOG(LogMMD4UE4_PMXFactory, Warning, TEXT("%d_%s"), __LINE__, *(ErrorMsg->ToText().ToString()));
 			break;
 		default:

@@ -9,7 +9,7 @@
 #include "ImportUtils/SkelImport.h"
 #include "AnimationUtils.h"
 #include "ObjectTools.h"
-#include "AssetRegistryModule.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 
 #include "VmdImportUI.h"
 
@@ -851,7 +851,7 @@ bool UVmdFactory::ImportVMDToAnimSequence(
 	adc.SetFrameRate(FFrameRate(30, 1));// DestSeq->SetRawNumberOfFrame(vmdMotionInfo->maxFrame);
 	adc.SetNumberOfFrames(fr.AsFrameNumber(vmdMotionInfo->maxFrame));
 	
-	adc.SetPlayLength(FGenericPlatformMath::Max<float>(1.0f / 30.0f * (float)vmdMotionInfo->maxFrame, MINIMUM_ANIMATION_LENGTH));
+	//adc.SetPlayLength(FGenericPlatformMath::Max<float>(1.0f / 30.0f * (float)vmdMotionInfo->maxFrame, MINIMUM_ANIMATION_LENGTH));
 	adc.NotifyPopulated();
 	adc.CloseBracket();
 	//DestSeq->SequenceLength = FGenericPlatformMath::Max<float>(1.0f / 30.0f * (float)vmdMotionInfo->maxFrame, MINIMUM_ANIMATION_LENGTH);

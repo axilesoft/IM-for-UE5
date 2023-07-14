@@ -5,7 +5,7 @@
 
 #include "CoreMinimal.h"
 #include "ComponentReregisterContext.h"
-#include "AssetRegistryModule.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetToolsModule.h"
 
 #include "ContentBrowserModule.h"
@@ -1120,7 +1120,7 @@ UMaterialInterface * UPmxMaterialImport::DuplicateBaseMaterial(
 	UMaterial* BaseMatOriginal = nullptr;
 	
 	//FAssetData AssetData = AssetRegistryModule.Get().GetAssetByObjectPath(FName(TEXT(*DupAssetBaseName)));
-	FAssetData AssetData = AssetRegistryModule.Get().GetAssetByObjectPath(FName(*DupAssetBaseName));
+	FAssetData AssetData = AssetRegistryModule.Get().GetAssetByObjectPath(FSoftObjectPath(*DupAssetBaseName));
 	BaseMatOriginal = Cast<UMaterial>(AssetData.GetAsset());
 	//check(BaseMatOriginal);
 	if (nullptr == BaseMatOriginal)
