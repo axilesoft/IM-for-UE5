@@ -45,6 +45,10 @@ PMXImportOptions* GetImportOptions(
 {
 	bOutOperationCanceled = false;
 	ImportUI->bCreatePhysicsAsset = true;
+
+	ImportUI->bImportMaterials = true;
+	ImportUI->bImportTextures = true;
+	ImportUI->bCreateMaterialInstMode = true;
 	if (bShowOptionDialog)
 	{
 		bOutImportAll = false;

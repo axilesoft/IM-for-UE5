@@ -802,7 +802,7 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 						ObjectsToDelete.Add(NewPhysicsAsset);
 						ObjectTools::DeleteObjects(ObjectsToDelete, false);
 					}
-
+					//NewPhysicsAsset->PreEditChange(NULL);
 
 					int bdn = NewPhysicsAsset->SkeletalBodySetups.Num(); 
 					for (int i = 0; i < bdn; i++)
@@ -877,6 +877,7 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 						}
 
 					}
+
 #if 1
 					for (int i = 0; i < bdn; i++)
 						for (int j = i + 1; j < bdn; j++)
@@ -886,26 +887,30 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 #endif
 					//NewPhysicsAsset->ConstraintSetup.Empty();
 					int csn=NewPhysicsAsset->ConstraintSetup.Num();
-					
+
+
 					for (int i = 0; i < csn; i++)
 					{
-						 
+						NewPhysicsAsset->ConstraintSetup[i]->PreEditChange(NULL);
 						FConstraintInstance &cs = NewPhysicsAsset->ConstraintSetup[i]->DefaultInstance;
 						//cs.ProfileInstance.AngularDrive.AngularDriveMode = EAngularDriveMode::TwistAndSwing;
 						cs.ProfileInstance.ConeLimit.Swing1Motion = EAngularConstraintMotion::ACM_Limited;
 						cs.ProfileInstance.ConeLimit.Swing2Motion = EAngularConstraintMotion::ACM_Limited;
 						cs.ProfileInstance.TwistLimit.TwistMotion = EAngularConstraintMotion::ACM_Limited;
-						cs.ProfileInstance.TwistLimit.TwistLimitDegrees = 0;
-						cs.ProfileInstance.ConeLimit.Swing1LimitDegrees = 25;
+						cs.ProfileInstance.TwistLimit.TwistLimitDegrees = 5;
+						cs.ProfileInstance.ConeLimit.Swing1LimitDegrees = 5;
 						cs.ProfileInstance.ConeLimit.Swing2LimitDegrees = 5;
-
+						auto s1 = cs.ProfileInstance.ConeLimit.Swing1Motion;
+						auto s2 = cs.ProfileInstance.ConeLimit.Swing1LimitDegrees;
+						cs.SetAngularTwistLimit(s1, s2);
+						cs.SetAngularSwing1Limit(s1, s2);
+						cs.SetAngularSwing2Limit(s1, s2);
 						cs.SetDisableCollision(true);
+						NewPhysicsAsset->ConstraintSetup[i]->PostEditChange();
 					}
 
-					//NewPhysicsAsset->MarkPackageDirty();
-					//NewPhysicsAsset->PreEditChange(NULL);
 					//NewPhysicsAsset->PostEditChange();
-			
+					//NewPhysicsAsset->MarkPackageDirty();
  
 				}
 			}
