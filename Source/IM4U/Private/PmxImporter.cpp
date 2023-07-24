@@ -830,6 +830,47 @@ Buffer += memcopySize;
 			}
 		}
 
+		{//Joint 
+			int32 i;
+
+			int32 jtNum = 0;
+			readBuffer(jtNum);
+
+			jointList.AddZeroed(jtNum);
+
+			int32 PmxSkinNum = 0;
+			for (i = 0; i < jtNum; i++)
+			{
+				PMX_JOINT &jt = jointList[i];
+				jt.Name = PMXTexBufferToFString(&Buffer, pmxEncodeType);
+				
+				jt.NameEng = PMXTexBufferToFString(&Buffer, pmxEncodeType);
+				readBuffer(jt.Type);
+
+				jt.RigidBodyAIndex = MMDExtendBufferSizeToUint32(&Buffer, this->baseHeader.RigidIndexSize);
+				jt.RigidBodyBIndex = MMDExtendBufferSizeToUint32(&Buffer, this->baseHeader.RigidIndexSize);
+				auto bone=boneList[jt.RigidBodyAIndex];// jt.fnName = FName(bone.Name);
+				
+				readBuffer(jt.Position);
+				readBuffer(jt.Rotation);
+				readBuffer(jt.ConstrainPositionMin);			// 移動制限-下限
+				readBuffer(jt.ConstrainPositionMax);			// 移動制限-上限
+				readBuffer(jt.ConstrainRotationMin);			// 回転制限-下限
+				readBuffer(jt.ConstrainRotationMax);			// 回転制限-上限
+				readBuffer(jt.SpringPosition);			// バネ定数-移動
+				readBuffer(jt.SpringRotation);			// バネ定数-回転
+
+				auto rx = glm::rotate(glm::mat4(1), jt.Rotation.X, glm::vec3(1, 0, 0));
+				auto ry = glm::rotate(glm::mat4(1), jt.Rotation.Y, glm::vec3(0, 1, 0));
+				auto rz = glm::rotate(glm::mat4(1), jt.Rotation.Z, glm::vec3(0, 0, 1));
+				glm::mat4 rotMat = ry * rx * rz;
+				glm::quat q(rotMat);
+				jt.Quat=FQuat(q.x, -q.z, q.y, q.w);
+ 
+ 
+
+			}
+		}
 		/*ボーンIndex修正*/
 		if(false == FixSortParentBoneIndex())
 		{

@@ -249,22 +249,24 @@ namespace MMD4UE4
 	struct PMX_JOINT
 	{
 		FString	Name;						// 名前
-
+		FString	NameEng;
 		uint8	Type;								// 種類( 0:スプリング6DOF ( PMX2.0 では 0 のみ )
 
 		int		RigidBodyAIndex;					// 接続先剛体Ａ
 		int		RigidBodyBIndex;					// 接続先剛体Ｂ
 
 		FVector3f	Position;						// 位置
-		float	Rotation[3];						// 回転( ラジアン )
+		FVector3f	Rotation;						// 回転( ラジアン )
 
-		float	ConstrainPositionMin[3];			// 移動制限-下限
-		float	ConstrainPositionMax[3];			// 移動制限-上限
-		float	ConstrainRotationMin[3];			// 回転制限-下限
-		float	ConstrainRotationMax[3];			// 回転制限-上限
+		FVector3f	ConstrainPositionMin;			// 移動制限-下限
+		FVector3f	ConstrainPositionMax;			// 移動制限-上限
+		FVector3f	ConstrainRotationMin;			// 回転制限-下限
+		FVector3f	ConstrainRotationMax;			// 回転制限-上限
 
-		float	SpringPosition[3];				// バネ定数-移動
-		float	SpringRotation[3];				// バネ定数-回転
+		FVector3f	SpringPosition;				// バネ定数-移動
+		FVector3f	SpringRotation;				// バネ定数-回転
+
+		FQuat       Quat;
 	};
 	//////////////////////////////////////////////////////////////
 
@@ -336,7 +338,7 @@ namespace MMD4UE4
 		TArray<PMX_BONE>	boneList;
 		TArray<PMX_MORPH>	morphList;
 		TArray<PMX_RIGIDBODY>	rigidList;
-
+		TArray<PMX_JOINT> jointList;
 
 	};
 

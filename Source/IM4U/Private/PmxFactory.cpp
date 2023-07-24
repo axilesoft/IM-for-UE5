@@ -406,6 +406,100 @@ UObject* UPmxFactory::FactoryCreateBinary
 }
 
 
+static UPhysicsConstraintTemplate* createConstraint(USkeletalMesh* sk, UPhysicsAsset* pa, MMD4UE4::PmxMeshInfo* pmx, MMD4UE4::PMX_JOINT& joint) {
+	UPhysicsConstraintTemplate* ct = NewObject<UPhysicsConstraintTemplate>(pa, NAME_None, RF_Transactional);
+	pa->ConstraintSetup.Add(ct);
+	auto rb1 = pmx->rigidList[joint.RigidBodyAIndex];
+	auto rb2 = pmx->rigidList[joint.RigidBodyBIndex];
+
+	FName con1 = rb1.fnName;
+	FName con2 = rb2.fnName;
+
+	//"skirt_01_01"
+	ct->Modify(false);
+	{
+		FString orgname = con1.ToString() + TEXT("_") + con2.ToString();
+		FString cname = orgname;
+		int Index = 0;
+		while (pa->FindConstraintIndex(*cname) != INDEX_NONE)
+		{
+			cname = FString::Printf(TEXT("%s_%d"), *orgname, Index++);
+		}
+		ct->DefaultInstance.JointName = *cname;
+	}
+
+	ct->DefaultInstance.ConstraintBone1 = con1;
+	ct->DefaultInstance.ConstraintBone2 = con2;
+#if 0
+	ct->DefaultInstance.SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Limited, (joint.ConstrainPositionMax.X-joint.ConstrainPositionMin.X)*180/UE_PI);
+	ct->DefaultInstance.SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Limited, (joint.ConstrainPositionMax.Y - joint.ConstrainPositionMin.Y)*180/UE_PI);
+	ct->DefaultInstance.SetAngularTwistLimit(EAngularConstraintMotion::ACM_Limited, (joint.ConstrainPositionMax.Z - joint.ConstrainPositionMin.Z) * 180 / UE_PI);
+#else
+	ct->DefaultInstance.SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Limited,10);
+	ct->DefaultInstance.SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Limited, 10);
+	ct->DefaultInstance.SetAngularTwistLimit(EAngularConstraintMotion::ACM_Limited, 10);
+#endif
+	ct->DefaultInstance.ProfileInstance.ConeLimit.Stiffness = 100.f;// .stiffness;
+	ct->DefaultInstance.ProfileInstance.TwistLimit.Stiffness = 100.f;// .stiffness;
+
+	const int32 BoneIndex1 = rb1.BoneIndex;
+	const int32 BoneIndex2 = rb2.BoneIndex;
+
+	if (BoneIndex1 == INDEX_NONE || BoneIndex2 == INDEX_NONE) {
+#if WITH_EDITOR
+
+			ct->PostEditChange();
+		
+#endif
+		return ct;
+	}
+
+	check(BoneIndex1 != INDEX_NONE);
+	check(BoneIndex2 != INDEX_NONE);
+
+ 
+	const FTransform BoneTransform1 = FTransform(FVector3d(rb1.Position));//sk->GetBoneTransform(BoneIndex1);
+	FTransform BoneTransform2 = FTransform(FVector3d(rb2.Position));
+
+ 
+
+	//auto b = BoneTransform1;
+	ct->DefaultInstance.Pos1 = FVector::ZeroVector;
+	ct->DefaultInstance.PriAxis1 = FVector(1, 0, 0);
+	ct->DefaultInstance.SecAxis1 = FVector(0, 1, 0);
+
+
+	auto r = BoneTransform2;// .GetRelativeTransform(BoneTransform2);
+	//	auto r = BoneTransform1.GetRelativeTransform(BoneTransform2);
+	auto twis = r.GetLocation().GetSafeNormal();
+	auto p1 = twis;
+	p1.X = p1.Z = 0.f;
+	auto p2 = FVector::CrossProduct(twis, p1).GetSafeNormal();
+	p1 = FVector::CrossProduct(p2, twis).GetSafeNormal();
+
+	ct->DefaultInstance.Pos2 = -r.GetLocation();
+	//ct->DefaultInstance.PriAxis2 = p1;
+	//ct->DefaultInstance.SecAxis2 = p2;
+	ct->DefaultInstance.PriAxis2 = joint.Quat.GetRotationAxis();
+	FVector ort=FVector::CrossProduct(ct->DefaultInstance.PriAxis2, FVector(0, 1, 0)).GetSafeNormal();
+	ct->DefaultInstance.SecAxis2 = ort;
+
+	// child 
+	//ct->DefaultInstance.SetRefFrame(EConstraintFrame::Frame1, FTransform::Identity);
+	// parent
+	//ct->DefaultInstance.SetRefFrame(EConstraintFrame::Frame2, BoneTransform1.GetRelativeTransform(BoneTransform2));
+
+#if WITH_EDITOR
+	ct->SetDefaultProfile(ct->DefaultInstance);
+
+		ct->PostEditChange();
+	
+#endif
+	//ct->DefaultInstance.InitConstraint();
+
+	return ct;
+}
+
 //////////////////////////////////////////////////////////////////////
 USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 	UObject* InParent,
@@ -781,6 +875,7 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 				}
 				else
 				{
+#if 1
 					FPhysAssetCreateParams NewBodyData; 
 					//PmxPhysicsParam pmxpm;
 					NewBodyData.bDisableCollisionsByDefault = true;
@@ -886,6 +981,8 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 							//else						NewPhysicsAsset->DisableCollision(j, i);
 #endif
 					//NewPhysicsAsset->ConstraintSetup.Empty();
+
+#if 1
 					int csn=NewPhysicsAsset->ConstraintSetup.Num();
 
 
@@ -893,25 +990,39 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 					{
 						NewPhysicsAsset->ConstraintSetup[i]->PreEditChange(NULL);
 						FConstraintInstance &cs = NewPhysicsAsset->ConstraintSetup[i]->DefaultInstance;
+						UE_LOG(LogMMD4UE4_PMXFactory, Warning, TEXT("JT %s - %s"), *cs.ConstraintBone1.ToString(), *cs.ConstraintBone2.ToString());
+
 						//cs.ProfileInstance.AngularDrive.AngularDriveMode = EAngularDriveMode::TwistAndSwing;
 						cs.ProfileInstance.ConeLimit.Swing1Motion = EAngularConstraintMotion::ACM_Limited;
 						cs.ProfileInstance.ConeLimit.Swing2Motion = EAngularConstraintMotion::ACM_Limited;
 						cs.ProfileInstance.TwistLimit.TwistMotion = EAngularConstraintMotion::ACM_Limited;
-						cs.ProfileInstance.TwistLimit.TwistLimitDegrees = 5;
-						cs.ProfileInstance.ConeLimit.Swing1LimitDegrees = 5;
-						cs.ProfileInstance.ConeLimit.Swing2LimitDegrees = 5;
+						cs.ProfileInstance.TwistLimit.TwistLimitDegrees = 10;
+						cs.ProfileInstance.TwistLimit.Stiffness = 100.f;// *spring.stiffness;
+						cs.ProfileInstance.ConeLimit.Swing1LimitDegrees = 10;
+						cs.ProfileInstance.ConeLimit.Swing2LimitDegrees = 10;
+						cs.ProfileInstance.ConeLimit.Stiffness = 100.f;// *spring.stiffness;
 						auto s1 = cs.ProfileInstance.ConeLimit.Swing1Motion;
 						auto s2 = cs.ProfileInstance.ConeLimit.Swing1LimitDegrees;
+					
 						cs.SetAngularTwistLimit(s1, s2);
 						cs.SetAngularSwing1Limit(s1, s2);
 						cs.SetAngularSwing2Limit(s1, s2);
 						cs.SetDisableCollision(true);
-						NewPhysicsAsset->ConstraintSetup[i]->PostEditChange();
+						
+						NewPhysicsAsset->ConstraintSetup[i]->PostEditChange(); 
 					}
+#else
+					NewPhysicsAsset->ConstraintSetup.Reset(0);
+					int csn = pmxMeshInfoPtr->jointList.Num();
 
+					for (int i = 0; i < csn; i++)
+						createConstraint(SkeletalMesh, NewPhysicsAsset, pmxMeshInfoPtr, pmxMeshInfoPtr->jointList[i]);
+#endif
 					//NewPhysicsAsset->PostEditChange();
 					//NewPhysicsAsset->MarkPackageDirty();
- 
+#else
+NewPhysicsAsset->SkeletalBodySetups.Add();
+#endif
 				}
 			}
 		}
