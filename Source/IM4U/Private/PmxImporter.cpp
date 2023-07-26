@@ -826,7 +826,7 @@ Buffer += memcopySize;
 				readBuffer(rb.Friction);
 				readBuffer(rb.OpType);
 
-
+				rb.idx = i;
 			}
 		}
 
@@ -898,6 +898,16 @@ Buffer += memcopySize;
 
 		Buf = Buffer;
 		return true;
+	}
+
+	PMX_JOINT* PmxMeshInfo::findJoint(PMX_RIGIDBODY* rb1, PMX_RIGIDBODY* rb2) {
+		auto n = jointList.Num();
+		for (int i = 0; i < n; i++) {
+			auto &j=jointList[i];
+			if (j.RigidBodyAIndex == rb1->idx && j.RigidBodyBIndex == rb2->idx || j.RigidBodyAIndex == rb2->idx && j.RigidBodyBIndex == rb1->idx)
+				return &j;
+		}
+		return nullptr;
 	}
 
 	bool PmxMeshInfo::FixSortParentBoneIndex()

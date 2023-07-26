@@ -430,7 +430,8 @@ static UPhysicsConstraintTemplate* createConstraint(USkeletalMesh* sk, UPhysicsA
 
 	ct->DefaultInstance.ConstraintBone1 = con1;
 	ct->DefaultInstance.ConstraintBone2 = con2;
-#if 0
+#if 1
+	//TODO xyz order
 	ct->DefaultInstance.SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Limited, (joint.ConstrainPositionMax.X-joint.ConstrainPositionMin.X)*180/UE_PI);
 	ct->DefaultInstance.SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Limited, (joint.ConstrainPositionMax.Y - joint.ConstrainPositionMin.Y)*180/UE_PI);
 	ct->DefaultInstance.SetAngularTwistLimit(EAngularConstraintMotion::ACM_Limited, (joint.ConstrainPositionMax.Z - joint.ConstrainPositionMin.Z) * 180 / UE_PI);
@@ -480,9 +481,11 @@ static UPhysicsConstraintTemplate* createConstraint(USkeletalMesh* sk, UPhysicsA
 	ct->DefaultInstance.Pos2 = -r.GetLocation();
 	//ct->DefaultInstance.PriAxis2 = p1;
 	//ct->DefaultInstance.SecAxis2 = p2;
+
+	
 	ct->DefaultInstance.PriAxis2 = joint.Quat.GetRotationAxis();
 	FVector ort=FVector::CrossProduct(ct->DefaultInstance.PriAxis2, FVector(0, 1, 0)).GetSafeNormal();
-	ct->DefaultInstance.SecAxis2 = ort;
+	ct->DefaultInstance.SecAxis2 = ct->DefaultInstance.PriAxis2;
 
 	// child 
 	//ct->DefaultInstance.SetRefFrame(EConstraintFrame::Frame1, FTransform::Identity);
@@ -503,7 +506,7 @@ static UPhysicsConstraintTemplate* createConstraint(USkeletalMesh* sk, UPhysicsA
 //////////////////////////////////////////////////////////////////////
 USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 	UObject* InParent,
-	MMD4UE4::PmxMeshInfo *pmxMeshInfoPtr,
+	MMD4UE4::PmxMeshInfo *pmx,
 	const FName& Name,
 	EObjectFlags Flags,
 	//UFbxSkeletalMeshImportData* TemplateImportData,
@@ -559,7 +562,7 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 	if (
 		!ImportBone(
 			//NodeArray, 
-			pmxMeshInfoPtr,
+			pmx,
 			*SkelMeshImportDataPtr,
 			//TemplateImportData, 
 			//SortedLinkArray,
@@ -606,7 +609,7 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 	}
 	*/
 
-	for (int32 MaterialIndex = 0; MaterialIndex < pmxMeshInfoPtr->materialList.Num(); ++MaterialIndex)
+	for (int32 MaterialIndex = 0; MaterialIndex < pmx->materialList.Num(); ++MaterialIndex)
 	{
 		// Add an entry for each unique material
 		SkeletalMeshImportData::FMaterial NewMaterial;
@@ -646,7 +649,7 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 	if (
 		!FillSkelMeshImporterFromFbx(
 			*SkelMeshImportDataPtr,
-			pmxMeshInfoPtr
+			pmx
 			/*
 			FbxMesh,
 			Skin, 
@@ -905,7 +908,7 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 						TObjectPtr<USkeletalBodySetup>& bd = NewPhysicsAsset->SkeletalBodySetups[i];
 						USkeletalBodySetup* pbd = bd.Get();
 						FName bname = pbd->BoneName;// pbd->GetFName();
-						TArray<PMX_RIGIDBODY> rbs = pmxMeshInfoPtr->findRigid(bname);
+						TArray<PMX_RIGIDBODY> rbs = pmx->findRigids(bname);
 						
 						
 						
@@ -990,8 +993,11 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 					{
 						NewPhysicsAsset->ConstraintSetup[i]->PreEditChange(NULL);
 						FConstraintInstance &cs = NewPhysicsAsset->ConstraintSetup[i]->DefaultInstance;
-						UE_LOG(LogMMD4UE4_PMXFactory, Warning, TEXT("JT %s - %s"), *cs.ConstraintBone1.ToString(), *cs.ConstraintBone2.ToString());
+						
+						PMX_RIGIDBODY *rb1 = pmx->findRigid(cs.ConstraintBone1);
+						PMX_RIGIDBODY* rb2 = pmx->findRigid(cs.ConstraintBone2);
 
+						
 						//cs.ProfileInstance.AngularDrive.AngularDriveMode = EAngularDriveMode::TwistAndSwing;
 						cs.ProfileInstance.ConeLimit.Swing1Motion = EAngularConstraintMotion::ACM_Limited;
 						cs.ProfileInstance.ConeLimit.Swing2Motion = EAngularConstraintMotion::ACM_Limited;
@@ -1003,10 +1009,21 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 						cs.ProfileInstance.ConeLimit.Stiffness = 100.f;// *spring.stiffness;
 						auto s1 = cs.ProfileInstance.ConeLimit.Swing1Motion;
 						auto s2 = cs.ProfileInstance.ConeLimit.Swing1LimitDegrees;
-					
 						cs.SetAngularTwistLimit(s1, s2);
 						cs.SetAngularSwing1Limit(s1, s2);
 						cs.SetAngularSwing2Limit(s1, s2);
+						if (rb1 && rb2) {
+							auto jt = pmx->findJoint(rb1, rb2);
+							if (jt)
+							{
+								auto& joint = *jt;
+								UE_LOG(LogMMD4UE4_PMXFactory, Warning, TEXT("JT %s - %s"), *cs.ConstraintBone1.ToString(), *cs.ConstraintBone2.ToString());
+								cs.SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Limited, (joint.ConstrainPositionMax.X - joint.ConstrainPositionMin.X) * 180 / UE_PI);
+								cs.SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Limited, (joint.ConstrainPositionMax.Y - joint.ConstrainPositionMin.Y) * 180 / UE_PI);
+								cs.SetAngularTwistLimit(EAngularConstraintMotion::ACM_Limited, (joint.ConstrainPositionMax.Z - joint.ConstrainPositionMin.Z) * 180 / UE_PI);
+							}
+						}
+
 						cs.SetDisableCollision(true);
 						
 						NewPhysicsAsset->ConstraintSetup[i]->PostEditChange(); 
