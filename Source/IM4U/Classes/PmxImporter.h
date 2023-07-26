@@ -243,6 +243,8 @@ namespace MMD4UE4
 		float	Friction;					// 摩擦力
 
 		uint8	OpType;						// 剛体タイプ( 0:Bone追従  1:物理演算  2:物理演算(Bone位置合わせ) )
+
+		int idx;
 	};
 
 	// ジョイント情報
@@ -312,13 +314,21 @@ namespace MMD4UE4
 			Buffer += memcopySize;
 		}
 
-		TArray<PMX_RIGIDBODY> findRigid(FName bname) {
+		TArray<PMX_RIGIDBODY> findRigids(FName bname) {
 			TArray<PMX_RIGIDBODY> list;
 			for (int i = 0; i < rigidList.Num(); i++)
 				if (rigidList[i].fnName == bname)
 					list.Add(rigidList[i]);
 			return list;
 		}
+		PMX_RIGIDBODY *findRigid(FName bname) {
+			
+			for (int i = 0; i < rigidList.Num(); i++)
+				if (rigidList[i].fnName == bname)
+					return &rigidList[i];
+			return nullptr;
+		}
+		PMX_JOINT* findJoint(PMX_RIGIDBODY* rb1, PMX_RIGIDBODY* rb2);
 		///////////////////////////////////////
 		const uint8* Buffer;
 		char				magic[4];
