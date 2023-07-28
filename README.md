@@ -1,5 +1,7 @@
-Still work in UE5.2 https://youtu.be/BEjDlk0Z9go
-UE 5.2.1 Release checked
+Still work in UE5.3 https://youtu.be/BEjDlk0Z9go
+
+UE 5.3.0 Preview checked
+
 ------------
 # IMPORT MMD for UE5
 
