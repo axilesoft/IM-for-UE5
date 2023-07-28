@@ -749,7 +749,7 @@ bool UVmdFactory::ImportMorphCurveToAnimSequence(
 			{
 				CurveToImport
 					= (FFloatCurve*)(DestSeq->GetCurveData().GetCurveData(NewName.UID));
-				CurveToImport->Name = NewName;
+				//CurveToImport->Name = NewName;
 			}
 			else
 			{

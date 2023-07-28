@@ -294,7 +294,7 @@ UObject* UPmxFactory::FactoryCreateBinary
 						USkeletalMesh* NewMesh = NULL;
 						if (LODIndex == 0 /*&& SkelMeshNodeArray.Num() != 0*/)
 						{
-							FName OutputName = FName(*FString::Printf(TEXT("%s"), *Name.ToString() ));// FbxImporter->MakeNameForMesh(Name.ToString(), SkelMeshNodeArray[0]);
+							FName OutputName = ImportOptions->MeshName.Len()>0 ? FName(ImportOptions->MeshName) : FName(*FString::Printf(TEXT("%s"), *Name.ToString()));// FbxImporter->MakeNameForMesh(Name.ToString(), SkelMeshNodeArray[0]);
 							
 							
 							NewMesh = ImportSkeletalMesh(

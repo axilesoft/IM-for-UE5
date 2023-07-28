@@ -367,6 +367,7 @@ struct PMXImportOptions
 	bool bCreateMaterialInstMode;
 	bool bUnlitMaterials;
 	bool bImportLOD;
+	FString MeshName;
 	bool bUsedAsFullName;
 	bool bConvertScene;
 	bool bRemoveNameSpace;

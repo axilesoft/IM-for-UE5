@@ -40,6 +40,9 @@ class UPmxImportUI : public UObject
 	//UPROPERTY()
 		TEnumAsByte<enum EPMXImportType> MeshTypeToImport;
 
+		UPROPERTY(EditAnywhere, AdvancedDisplay, Category = Animation, meta = (ImportType = "SkeletalMesh" , ToolTip = "Will use file name if blank."))
+		FString MeshName;
+
 	/** Use the string in "Name" field as full name of mesh. The option only works when the scene contains one mesh. */
 	//UPROPERTY(EditAnywhere, AdvancedDisplay, config, Category = Miscellaneous, meta = (OBJRestrict = "true"))
 		uint32 bOverrideFullName : 1;
