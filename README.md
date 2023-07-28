@@ -2,6 +2,19 @@
 UE 5.3.0 Preview checked
 
  https://youtu.be/BEjDlk0Z9go
+
+# Installation
+1. Install VS2022 
+2. Create a  C++ Unreal Engine Project, close.
+3. Get plugin socue code and glm:
+ run cmd in [Project Root]\Plugins
+ git clone https://github.com/axilesoft/IM-for-UE5.git
+ cd IM-for-UE5 
+ git submodule init   
+ git submodule update
+4. Right click UE project file (*.uproject),  select "Generate Visual Studio project files".
+5. Open VS project compile , run.
+   
 ------------
 # IMPORT MMD for UE5
 
