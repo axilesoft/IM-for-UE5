@@ -1388,7 +1388,7 @@ UMaterialInterface* UPmxMaterialImport::CreateMaterialInst_Masked(
 		);
 	}
 
-	if(pUMIC->TwoSided != PmxMaterial.CullingOff)
+	//if(pUMIC->TwoSided != PmxMaterial.CullingOff)
 	{
 		// TowSide有効の場合はONにする 
 		pUMIC->BasePropertyOverrides.TwoSided = PmxMaterial.CullingOff;
