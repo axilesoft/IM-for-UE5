@@ -929,7 +929,7 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 						
 						for (auto rb:rbs) {
 							
-							if (rb.Mass < 0.001 || rb.RigidBodyGroupIndex < 3)
+							if (  rb.Mass < 0.001 || rb.group < 3)
 							{
 								pbd->PhysicsType = PhysType_Kinematic;
 
@@ -942,7 +942,7 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 							ft.SetLocation((FVector)rb.Position);
 							//FQuat qd  = FRotator(rb.Rotation.X * 180.f / PI, rb.Rotation.Y * 180.f / PI, rb.Rotation.Z * 180.f / PI).Quaternion();
 
-							ft.SetRotation(rb.Quat);
+							ft.SetRotation(rb.rttQuat);
 
 							if (rb.ShapeType == 0) {
 

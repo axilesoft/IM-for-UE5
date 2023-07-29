@@ -224,8 +224,8 @@ namespace MMD4UE4
 		FString	NameEng;
 		uint32	BoneIndex;							// 対象ボーン番号
 
-		uint8	RigidBodyGroupIndex;				// 剛体グループ番号
-		uint16	RigidBodyGroupTarget;				// 剛体グループ対象
+		uint8	group;				// 剛体グループ番号
+		uint16	collisionGroup;				// 剛体グループ対象
 
 		uint8	ShapeType;							// 形状( 0:球  1:箱  2:カプセル )
 		//float	ShapeW;							// 幅
@@ -235,7 +235,7 @@ namespace MMD4UE4
 
 		FVector3f	Position;						// 位置
 		FVector3f	Rotation;						// 回転( ラジアン )
-		FQuat       Quat;
+
 		float	Mass;					// 質量
 		float	PosDim;					// 移動減衰
 		float	RotDim;					// 回転減衰
@@ -244,6 +244,7 @@ namespace MMD4UE4
 
 		uint8	OpType;						// 剛体タイプ( 0:Bone追従  1:物理演算  2:物理演算(Bone位置合わせ) )
 
+		FQuat   rttQuat;
 		int idx;
 	};
 
