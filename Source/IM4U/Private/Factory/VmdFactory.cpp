@@ -256,7 +256,9 @@ InportOption画面にて指定することで取り込むことが可能です�
 			Skeleton = ImportUI->Skeleton;
 			SkeletalMesh = ImportUI->SkeletonMesh;
 			/* 最低限のパラメータ設定チェック */
-			if ( (!Skeleton) ||  (!SkeletalMesh) || (Skeleton != SkeletalMesh->GetSkeleton()))
+			if ( (!Skeleton) 
+				||  (SkeletalMesh) && (Skeleton != SkeletalMesh->GetSkeleton())
+				)
 			{
 
 				UE_LOG(LogMMD4UE4_VMDFactory, Warning,
@@ -519,7 +521,7 @@ UAnimSequence * UVmdFactory::ImportAnimations(
 		{
 			//LastCreatedAnim->BakeTrackCurvesToRawAnimation();
 		}
-		else
+		else if (SkeletalMesh)
 		{
 			// otherwise just compress
 			//LastCreatedAnim->PostProcessSequence();
