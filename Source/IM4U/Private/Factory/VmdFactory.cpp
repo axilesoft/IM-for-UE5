@@ -508,6 +508,7 @@ UAnimSequence * UVmdFactory::ImportAnimations(
 			);
 		}
 	}
+	//LastCreatedAnim->BoneCompressionSettings
 
 	/////////////////////////////////////////
 	// end process?
@@ -851,7 +852,8 @@ bool UVmdFactory::ImportVMDToAnimSequence(
 
 	auto fr = FFrameRate(30, 1);
 	adc.SetFrameRate(FFrameRate(30, 1));// DestSeq->SetRawNumberOfFrame(vmdMotionInfo->maxFrame);
-	adc.SetNumberOfFrames(fr.AsFrameNumber(vmdMotionInfo->maxFrame));
+	const FFrameNumber FrameNumber = fr.AsFrameNumber(vmdMotionInfo->maxFrame/30);
+	adc.SetNumberOfFrames(FrameNumber);
 	
 	//adc.SetPlayLength(FGenericPlatformMath::Max<float>(1.0f / 30.0f * (float)vmdMotionInfo->maxFrame, MINIMUM_ANIMATION_LENGTH));
 	adc.NotifyPopulated();
@@ -913,14 +915,15 @@ bool UVmdFactory::ImportVMDToAnimSequence(
 			}
 			//nop
 			//フレーム分同じ値を設定する
-			for (int32 i = 0; i < DestSeq->GetNumberOfSampledKeys(); i++)
-			{
-				FTransform nrmTrnc;
-				nrmTrnc.SetIdentity();
-				RawTrack.PosKeys.Add(FVector3f(nrmTrnc.GetTranslation() + refTranslation));
-				RawTrack.RotKeys.Add(FQuat4f(nrmTrnc.GetRotation()));
-				RawTrack.ScaleKeys.Add(FVector3f(nrmTrnc.GetScale3D()));
-			}
+
+			//for (int32 i = 0; i < DestSeq->GetNumberOfSampledKeys(); i++)
+			//{
+			//	FTransform nrmTrnc;
+			//	nrmTrnc.SetIdentity();
+			//	RawTrack.PosKeys.Add(FVector3f(nrmTrnc.GetTranslation() + refTranslation));
+			//	RawTrack.RotKeys.Add(FQuat4f(nrmTrnc.GetRotation()));
+			//	RawTrack.ScaleKeys.Add(FVector3f(nrmTrnc.GetScale3D()));
+			//}
 		}
 		else
 		{
@@ -946,9 +949,10 @@ bool UVmdFactory::ImportVMDToAnimSequence(
 			//90度以上の軸回転が入るとクォータニオンの為か処理に誤りがあるかで余計な回転が入ってしまう。
 			//→上記により、単にZ回転（ターンモーション）で下半身と上半身の軸が物理的にありえない回転の組み合わせになる。バグ。
 			
-
-			for (int32 i = 0; i < DestSeq->GetNumberOfSampledKeys(); i++)
+			auto nk = DestSeq->GetNumberOfSampledKeys();
+			for (int32 i = 0; i < nk && nextKeyFrame>=i; i++)
 			{
+ 
 				if (i == 0)
 				{
 					if (i == nextKeyFrame)
@@ -1002,7 +1006,7 @@ bool UVmdFactory::ImportVMDToAnimSequence(
 						RawTrack.ScaleKeys.Add(FVector3f(nrmTrnc.GetScale3D()));
 					}
 				}
-				else //if (nextKeyFrame == i)
+				else // if (nextKeyFrame == i)
 				{
 					float blendRate = 1;
 					FTransform NextTranc;
@@ -1168,6 +1172,8 @@ bool UVmdFactory::ImportVMDToAnimSequence(
 					RawTrack.PosKeys.Add(FVector3f(tempTranceform.GetTranslation() + refTranslation));
 					RawTrack.RotKeys.Add(FQuat4f(tempTranceform.GetRotation()));
 					RawTrack.ScaleKeys.Add(FVector3f(tempTranceform.GetScale3D()));
+
+
 
 					if (nextKeyFrame == i)
 					{
