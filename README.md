@@ -15,7 +15,9 @@ https://youtube.com/shorts/7PGy1m9SIRE
  - git submodule update
 4. Right click UE project file (*.uproject),  select "Generate Visual Studio project files".
 5. Open VS project compile , run.
-   
+
+A tool to convert leg-IK to leg-D animation (since UE animation has no IK)
+https://github.com/axilesoft/IM-for-UE5/releases/tag/vmd_tool_v0.1
 ------------
 # IMPORT MMD for UE5
 
