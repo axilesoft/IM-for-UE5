@@ -852,7 +852,7 @@ bool UVmdFactory::ImportVMDToAnimSequence(
 
 	auto fr = FFrameRate(30, 1);
 	adc.SetFrameRate(FFrameRate(30, 1));// DestSeq->SetRawNumberOfFrame(vmdMotionInfo->maxFrame);
-	const FFrameNumber FrameNumber = fr.AsFrameNumber(vmdMotionInfo->maxFrame/30.0);
+	const FFrameNumber FrameNumber = fr.AsFrameNumber((vmdMotionInfo->maxFrame-1)/30.0);
 	adc.SetNumberOfFrames(FrameNumber);
 	
 	//adc.SetPlayLength(FGenericPlatformMath::Max<float>(1.0f / 30.0f * (float)vmdMotionInfo->maxFrame, MINIMUM_ANIMATION_LENGTH));

@@ -882,7 +882,7 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 					FPhysAssetCreateParams NewBodyData; 
 					//PmxPhysicsParam pmxpm;
 					NewBodyData.bDisableCollisionsByDefault = true;
-					NewBodyData.MinBoneSize = 2;
+					NewBodyData.MinBoneSize = 5;
 					//NewBodyData.pMmdParam = &pmxpm;
 					FText CreationErrorMessage;
 					bool bSuccess
@@ -978,9 +978,16 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 
 #if 1
 					for (int i = 0; i < bdn; i++)
-						for (int j = i + 1; j < bdn; j++)
+						for (int j = i + 1; j < bdn; j++) {
 							if (NewPhysicsAsset->SkeletalBodySetups[i]->PhysicsType != NewPhysicsAsset->SkeletalBodySetups[j]->PhysicsType)
 								NewPhysicsAsset->EnableCollision(j, i);
+							else {
+								auto c1 = NewPhysicsAsset->SkeletalBodySetups[i].GetFName().ToString()[0];
+								auto c2 = NewPhysicsAsset->SkeletalBodySetups[j].GetFName().ToString()[0];
+								if ( c1 == L'左' && c2 == L'右' || c1 == L'右' && c2 == L'左'	)
+									NewPhysicsAsset->EnableCollision(j, i);
+							}
+						}
 							//else						NewPhysicsAsset->DisableCollision(j, i);
 #endif
 					//NewPhysicsAsset->ConstraintSetup.Empty();
@@ -1002,19 +1009,35 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 						cs.ProfileInstance.ConeLimit.Swing1Motion = EAngularConstraintMotion::ACM_Limited;
 						cs.ProfileInstance.ConeLimit.Swing2Motion = EAngularConstraintMotion::ACM_Limited;
 						cs.ProfileInstance.TwistLimit.TwistMotion = EAngularConstraintMotion::ACM_Limited;
-						cs.ProfileInstance.TwistLimit.TwistLimitDegrees = 10;
+						cs.ProfileInstance.TwistLimit.TwistLimitDegrees = 20;
 						cs.ProfileInstance.TwistLimit.Stiffness = 100.f;// *spring.stiffness;
-						cs.ProfileInstance.ConeLimit.Swing1LimitDegrees = 10;
-						cs.ProfileInstance.ConeLimit.Swing2LimitDegrees = 10;
+						cs.ProfileInstance.ConeLimit.Swing1LimitDegrees = 20;
+						cs.ProfileInstance.ConeLimit.Swing2LimitDegrees = 20;
 						cs.ProfileInstance.ConeLimit.Stiffness = 100.f;// *spring.stiffness;
 						auto s1 = cs.ProfileInstance.ConeLimit.Swing1Motion;
 						auto s2 = cs.ProfileInstance.ConeLimit.Swing1LimitDegrees;
 						cs.SetAngularTwistLimit(s1, s2);
 						cs.SetAngularSwing1Limit(s1, s2);
 						cs.SetAngularSwing2Limit(s1, s2);
+
 						if (rb1 && rb2) {
 							auto jt = pmx->findJoint(rb1, rb2);
-							if (jt)
+							bool isLegR = cs.ConstraintBone1 == L"右足D";
+							bool isKneeR = cs.ConstraintBone1 == L"右ひざD";
+							if ( isLegR || cs.ConstraintBone1 == L"左足D") 
+							{
+								cs.SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Limited, (15));
+								cs.SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Limited, (15) );
+								cs.SetAngularTwistLimit(EAngularConstraintMotion::ACM_Limited, (60) );
+							}
+							else if (isKneeR || cs.ConstraintBone1 == L"左ひざD")
+							{
+								cs.SecAxis2 = FVector(0.0f, 1.f, -1.732f);
+								cs.SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Limited, (5));
+								cs.SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Limited, (5) );
+								cs.SetAngularTwistLimit(EAngularConstraintMotion::ACM_Limited, (60));
+							}
+							else if (jt)
 							{
 								auto& joint = *jt;
 								UE_LOG(LogMMD4UE4_PMXFactory, Warning, TEXT("JT %s - %s"), *cs.ConstraintBone1.ToString(), *cs.ConstraintBone2.ToString());
@@ -1043,7 +1066,6 @@ NewPhysicsAsset->SkeletalBodySetups.Add();
 				}
 			}
 		}
-
 
 		// see if we have skeleton set up
 		// if creating skeleton, create skeleeton
@@ -1098,6 +1120,10 @@ NewPhysicsAsset->SkeletalBodySetups.Add();
 		}
 	}
 #endif
+
+	//FControlRigBlueprintActions::CreateControlRigFromSkeletalMeshOrSkeleton(SkeletalMesh);
+
+
 	return SkeletalMesh;
 }
 

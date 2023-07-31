@@ -67,7 +67,10 @@ namespace UnrealBuildTool.Rules
             PublicIncludePaths.AddRange(
                 new string[] {
 					// ... add public include paths required here ...
-				}
+					"ControlRig/Public",
+                    "ControlRigDeveloper/Public",
+                    "ControlRigEditor/Public"
+                }
 				);
 
 			PrivateIncludePaths.AddRange(
@@ -100,7 +103,9 @@ namespace UnrealBuildTool.Rules
                     "ContentBrowser",
 					"AnimationDataController",
 
-                    "PhysicsUtilities","SkeletalMeshUtilitiesCommon"
+                    "PhysicsUtilities","SkeletalMeshUtilitiesCommon",
+                    "ControlRig",
+                    "ControlRigEditor","ControlRigDeveloper",
 					// ... add other public dependencies that you statically link with here ...
 				}
 				);
