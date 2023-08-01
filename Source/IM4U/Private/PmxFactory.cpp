@@ -653,7 +653,7 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 			*SkelMeshImportDataPtr,
 			pmx
 			/*
-			FbxMesh,
+			SkeletalMesh,
 			Skin, 
 			FbxShape,
 			SortedLinkArray, 

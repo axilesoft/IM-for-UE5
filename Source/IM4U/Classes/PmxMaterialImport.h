@@ -72,6 +72,7 @@ class UPmxMaterialImport
 	UObject * InParent ; //parent
 
 	TMap<FString, UTexture*> ExistImages;
+	
 public:
 	void InitializeBaseValue(
 		UObject * InParentPtr

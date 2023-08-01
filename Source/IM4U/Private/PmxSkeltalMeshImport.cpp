@@ -684,11 +684,13 @@ bool UPmxFactory::FillSkelMeshImporterFromFbx(
 	TArray<UMaterialInterface*> Materials;
 
 
+
 #if 1 //test Material Textuere
 	////////
 	TArray<UTexture*> textureAssetList;
 	if (ImportUI->bImportTextures)
 	{
+		
 		for (int k = 0; k < PmxMeshInfo->textureList.Num(); ++k)
 		{
 			pmxMaterialImportHelper.AssetsCreateTextuer(
@@ -944,7 +946,25 @@ bool UPmxFactory::FillSkelMeshImporterFromFbx(
 			= PmxMeshInfo->vertexList[ControlPointsIndex].Position;
 #endif
 	}
-#if 1 //vertex
+
+	if (0)
+	{
+		size_t vcc = 0;
+		for (size_t i = 0; i < PmxMeshInfo->materialList.Num(); i++)
+		{
+			// Add the mesh info
+			ImportData.MeshInfos.AddDefaulted();
+			SkeletalMeshImportData::FMeshInfo& MeshInfo = ImportData.MeshInfos.Last();
+			MeshInfo.Name = *PmxMeshInfo->materialList[i].Name;
+			MeshInfo.NumVertices = PmxMeshInfo->materialList[i].MaterialFaceVerticeNum;
+			MeshInfo.StartImportedVertex = vcc;
+			vcc += MeshInfo.NumVertices;
+			
+		}
+	}
+
+
+#if 1 //faces
 	bool OddNegativeScale = true;// false;// IsOddNegativeScale(TotalMatrix);
 
 	int32 VertexIndex;

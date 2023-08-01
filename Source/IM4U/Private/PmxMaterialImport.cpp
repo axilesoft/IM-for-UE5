@@ -1204,6 +1204,8 @@ UMaterialInterface* UPmxMaterialImport::CreateMaterialInst(
 	// 新MIC名 
 	FString NewMICName = FString::Printf(TEXT("M_%s"), *TargetMaterialName);
 
+  
+
 	FString TargetPathName = FPackageName::GetLongPackagePath(InParent->GetOutermost()->GetName()) / NewMICName;
 
 	// The material could already exist in the project

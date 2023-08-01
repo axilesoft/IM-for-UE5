@@ -300,13 +300,18 @@ namespace MMD4UE4
 
 			// マテリアルデータを格納するメモリ領域の確保
 			materialList.AddZeroed(PmxMaterialNum);
-
+			TMap<FString, int> MatNameList;
 			// マテリアルの読みこみ
 			for (uint32 i = 0; i < PmxMaterialNum; i++)
 			{
 				// 材質名の取得
 				//materialList[i].Name = PMXTexBufferToFString(&Buffer, pmxEncodeType);
 				materialList[i].Name = FString::Printf(TEXT("%s"), *PMXTexBufferToFString(&Buffer, pmxEncodeType));
+				if (MatNameList.Find(materialList[i].Name)) {
+					materialList[i].Name += FString::Printf(TEXT("_%03d"), MatNameList[materialList[i].Name]);// TEXT("_2");
+				}
+				MatNameList.FindOrAdd(materialList[i].Name)++;
+
 					//FString::Printf(TEXT("%d_%s"), i, *PMXTexBufferToFString(&Buffer, pmxEncodeType));
 				materialList[i].NameEng = PMXTexBufferToFString(&Buffer, pmxEncodeType);
 
