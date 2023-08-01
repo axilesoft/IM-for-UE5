@@ -162,7 +162,8 @@ public:
 	UMaterialInterface* CreateMaterialInst(
 		FString ParentObjName,
 		FString TargetMaterialName,
-		UMaterialInterface* ParentMaterial
+		UMaterialInterface* ParentMaterial,
+		uint32_t* oFlag
 	);
 
 	//-------------------------------------------------------------------------

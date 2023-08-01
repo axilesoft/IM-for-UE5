@@ -382,8 +382,8 @@ namespace MMD4UE4
 				// メモはスキップ
 				PMXTexBufferToFString(&Buffer, pmxEncodeType);
 				//材質に対応する面(頂点)数 (必ず3の倍数になる)
-				memcopySize = sizeof(materialList[i].MaterialFaceNum);
-				FMemory::Memcpy(&materialList[i].MaterialFaceNum, Buffer, memcopySize);
+				memcopySize = sizeof(materialList[i].MaterialFaceVerticeNum);
+				FMemory::Memcpy(&materialList[i].MaterialFaceVerticeNum, Buffer, memcopySize);
 				Buffer += memcopySize;
 			}
 			UE_LOG(LogMMD4UE4_PmxMeshInfo, Warning, TEXT("PMX Import [materialList] Complete"));

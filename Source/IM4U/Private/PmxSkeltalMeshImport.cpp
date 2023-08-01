@@ -954,7 +954,7 @@ bool UPmxFactory::FillSkelMeshImporterFromFbx(
 	int32 ExistWedgesNum = ImportData.Wedges.Num();
 	SkeletalMeshImportData::FVertex TmpWedges[3];
 
-	int32 facecount = 0;
+	int32 faceVtxCount = 0;
 	int32 matIndx = 0;
 
 	for (int32 TriangleIndex = ExistFaceNum, LocalIndex = 0; TriangleIndex < ExistFaceNum + TriangleCount; TriangleIndex++, LocalIndex++)
@@ -1010,14 +1010,14 @@ bool UPmxFactory::FillSkelMeshImporterFromFbx(
 
 			if (PmxMeshInfo->materialList.Num() > matIndx)
 			{
-				facecount++;
-				facecount++;
-				facecount++;
+				faceVtxCount++;
+				faceVtxCount++;
+				faceVtxCount++;
 				Triangle.MatIndex = matIndx;
-				if (facecount >= PmxMeshInfo->materialList[matIndx].MaterialFaceNum)
+				if (faceVtxCount >= PmxMeshInfo->materialList[matIndx].MaterialFaceVerticeNum)
 				{
 					matIndx++;
-					facecount = 0;
+					faceVtxCount = 0;
 				}
 			}
 		}

@@ -1189,7 +1189,7 @@ UMaterialInterface * UPmxMaterialImport::DuplicateBaseMaterial(
 UMaterialInterface* UPmxMaterialImport::CreateMaterialInst(
 	FString ParentObjName,
 	FString TargetMaterialName,
-	UMaterialInterface* ParentMaterial)
+	UMaterialInterface* ParentMaterial, uint32_t* oFlag)
 {
 	if ((nullptr == ParentMaterial))
 	{
@@ -1216,11 +1216,14 @@ UMaterialInterface* UPmxMaterialImport::CreateMaterialInst(
 	UMaterialInterface* FoundMaterial = LoadObject<UMaterialInterface>(NULL, *ObjectPath.ToString());
 
 
-	if (!FoundMaterial) 
+	if (FoundMaterial) 
+		*oFlag |= 0x1000;
+	else
 	{
 		ObjectPath = *(TargetPathName + TEXT(".") + NewMICName);
 		FoundMaterial = LoadObject<UMaterialInterface>(NULL, *ObjectPath.ToString());
 	}
+	
 	// do not override existing materials
 	if (FoundMaterial)
 	{
@@ -1301,8 +1304,8 @@ UMaterialInterface* UPmxMaterialImport::CreateMaterialInst_Masked(
 
 		return nullptr;
 	}
-	
-	UnrealMaterial = CreateMaterialInst(ParentObjName, MaterialFullName, ParentMaterial);
+	uint32_t oFlag = 0;
+	UnrealMaterial = CreateMaterialInst(ParentObjName, MaterialFullName, ParentMaterial,&oFlag);
 
 	UMaterialInstanceConstant *pUMIC = nullptr;
 	pUMIC = Cast<UMaterialInstanceConstant>(UnrealMaterial);
@@ -1312,7 +1315,7 @@ UMaterialInterface* UPmxMaterialImport::CreateMaterialInst_Masked(
 
 		return nullptr;
 	}
-	if (PmxMaterial.SphereMode > 0) {
+	if (PmxMaterial.SphereMode > 0 && !(oFlag&0x1000)) {
 		pUMIC->BasePropertyOverrides.BlendMode = BLEND_Additive;
 		pUMIC->BasePropertyOverrides.bOverride_BlendMode = true;
 	}
@@ -1435,8 +1438,8 @@ UMaterialInterface* UPmxMaterialImport::CreateMaterialInst_Masked_Unlit(
 
 		return nullptr;
 	}
-
-	UnrealMaterial = CreateMaterialInst(ParentObjName, MaterialFullName, ParentMaterial);
+	uint32_t oFlag = 0;
+	UnrealMaterial = CreateMaterialInst(ParentObjName, MaterialFullName, ParentMaterial, &oFlag);
 
 	UMaterialInstanceConstant *pUMIC = nullptr;
 	pUMIC = Cast<UMaterialInstanceConstant>(UnrealMaterial);
@@ -1536,8 +1539,8 @@ UMaterialInterface* UPmxMaterialImport::CreateMaterialInst_Luminous(
 
 		return nullptr;
 	}
-
-	UnrealMaterial = CreateMaterialInst(ParentObjName, MaterialFullName, ParentMaterial);
+	uint32_t oFlag = 0;
+	UnrealMaterial = CreateMaterialInst(ParentObjName, MaterialFullName, ParentMaterial, &oFlag);
 
 	UMaterialInstanceConstant *pUMIC = nullptr;
 	pUMIC = Cast<UMaterialInstanceConstant>(UnrealMaterial);
@@ -1649,8 +1652,8 @@ UMaterialInterface* UPmxMaterialImport::CreateMaterialInst_Luminous_Unlit(
 
 		return nullptr;
 	}
-
-	UnrealMaterial = CreateMaterialInst(ParentObjName, MaterialFullName, ParentMaterial);
+	uint32_t oFlag = 0;
+	UnrealMaterial = CreateMaterialInst(ParentObjName, MaterialFullName, ParentMaterial, &oFlag);
 
 	UMaterialInstanceConstant *pUMIC = nullptr;
 	pUMIC = Cast<UMaterialInstanceConstant>(UnrealMaterial);

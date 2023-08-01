@@ -527,7 +527,7 @@ namespace MMD4UE4
 				// メモはスキップ
 
 				//材質に対応する面(頂点)数 (必ず3の倍数になる)
-				pmxMaterialPtr.MaterialFaceNum = pmdMaterialPtr.FaceVertexCount;
+				pmxMaterialPtr.MaterialFaceVerticeNum = pmdMaterialPtr.FaceVertexCount;
 			}
 			UE_LOG(LogMMD4UE4_PmxMeshInfo, Warning, TEXT("PMX convert [materialList] Complete"));
 		}

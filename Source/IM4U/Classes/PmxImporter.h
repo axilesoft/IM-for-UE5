@@ -94,7 +94,7 @@ namespace MMD4UE4
 		uint8	ToonFlag;							// 共有トゥーンフラグ( 0:個別Toon 1:共有Toon )
 		int		ToonTextureIndex;					// トゥーンテクスチャインデックス
 
-		int		MaterialFaceNum;					// マテリアルが適応されている面の数
+		int		MaterialFaceVerticeNum;					// マテリアルが適応されている面の数
 	};
 
 	// ＩＫリンク情報
