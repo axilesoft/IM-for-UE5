@@ -2,6 +2,7 @@
 
 //#include "TestAssetPJ.h"
 #include "MyUObjectTestClsFactory.h"
+#if 0
 #include "IM4UPrivatePCH.h"
 #include "MyUObjectTestCls.h"
 
@@ -1920,3 +1921,4 @@ AActor* UMyUObjectTestClsFactory::ConvertBrushesToStaticMesh(
 	*/
 	return NewActor;
 }
+#endif

@@ -1,7 +1,8 @@
 // Copyright 2015 BlackMa9. All Rights Reserved.
 #pragma once
-
+#if 0
 #include "Engine.h"
+
 #include "Factories/Factory.h"
 #include "PmxMaterialImport.h"
 #include "PmxImporter.h"
@@ -135,3 +136,4 @@ class UMyUObjectTestClsFactory : public UFactory
 
 };
 
+#endif

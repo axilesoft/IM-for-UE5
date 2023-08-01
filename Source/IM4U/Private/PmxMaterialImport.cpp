@@ -1191,7 +1191,7 @@ UMaterialInterface* UPmxMaterialImport::CreateMaterialInst(
 	FString TargetMaterialName,
 	UMaterialInterface* ParentMaterial)
 {
-	if ((nullptr == ParentMaterial) )
+	if ((nullptr == ParentMaterial))
 	{
 		UE_LOG(LogCategoryPMXMaterialImport, Error, TEXT("[%s]:Parameter nullptr. New MIC Create NG.[%s]"), *(FString(__FUNCTION__)), *TargetMaterialName);
 		return nullptr;
@@ -1202,14 +1202,25 @@ UMaterialInterface* UPmxMaterialImport::CreateMaterialInst(
 
 
 	// 新MIC名 
-	FString NewMICName = FString::Printf( TEXT("MI_%s"), *TargetMaterialName );
+	FString NewMICName = FString::Printf(TEXT("M_%s"), *TargetMaterialName);
 
-	FString TargetPathName = FPackageName::GetLongPackagePath(InParent->GetOutermost()->GetName())/ NewMICName;
+	FString TargetPathName = FPackageName::GetLongPackagePath(InParent->GetOutermost()->GetName()) / NewMICName;
 
 	// The material could already exist in the project
-	FName ObjectPath = *(TargetPathName + TEXT(".") + NewMICName);
-	// Existing check
+
+
+
+	FString TargetPath = TargetPathName;
+	TargetPath.RemoveFromEnd(NewMICName);
+	FName ObjectPath = *(TargetPath + *ParentObjName + TEXT(".") + NewMICName);
 	UMaterialInterface* FoundMaterial = LoadObject<UMaterialInterface>(NULL, *ObjectPath.ToString());
+
+
+	if (!FoundMaterial) 
+	{
+		ObjectPath = *(TargetPathName + TEXT(".") + NewMICName);
+		FoundMaterial = LoadObject<UMaterialInterface>(NULL, *ObjectPath.ToString());
+	}
 	// do not override existing materials
 	if (FoundMaterial)
 	{

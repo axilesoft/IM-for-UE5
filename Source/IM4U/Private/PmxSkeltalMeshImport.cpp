@@ -719,7 +719,7 @@ bool UPmxFactory::FillSkelMeshImporterFromFbx(
 		for (int k = 0; k < PmxMeshInfo->materialList.Num(); ++k)
 		{
 			pmxMaterialImportHelper.CreateUnrealMaterial(
-				PmxMeshInfo->modelNameJP,
+				ImportUI->MeshName,//PmxMeshInfo->modelNameJP,
 				//InParent,
 				PmxMeshInfo->materialList[k],
 				ImportUI->bCreateMaterialInstMode,

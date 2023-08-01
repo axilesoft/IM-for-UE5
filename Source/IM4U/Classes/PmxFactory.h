@@ -1,7 +1,8 @@
 // Copyright 2015 BlackMa9. All Rights Reserved.
 // copy from UE4 :: FbxFactory class
-
 #pragma once
+
+#define IMUE5_SUPPORT_MODEL 1
 
 #include "Engine.h"
 #include "Factories/Factory.h"

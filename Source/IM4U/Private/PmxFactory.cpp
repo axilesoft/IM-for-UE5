@@ -75,10 +75,10 @@ UPmxFactory::UPmxFactory(const FObjectInitializer& ObjectInitializer)
 	SupportedClass = NULL;
 	//SupportedClass = UPmxFactory::StaticClass();
 	Formats.Empty();
-
+#if IMUE5_SUPPORT_MODEL
 	Formats.Add(TEXT("pmd;PMD meshes and animations"));
 	Formats.Add(TEXT("pmx;PMX meshes and animations"));
-
+#endif
 	bCreateNew = false;
 	bText = false;
 	bEditorImport = true;
@@ -164,7 +164,7 @@ UObject* UPmxFactory::FactoryCreateBinary
 	if (FString(Type).Equals(TEXT("pmx"), ESearchCase::IgnoreCase))
 	{
 		//Is PMX format 
-		bIsPmxFormat = true;
+		bIsPmxFormat = true;		
 	}
 	//Load MMD Model From binary File
 	MMD4UE4::PmxMeshInfo pmxMeshInfoPtr;
@@ -214,10 +214,12 @@ UObject* UPmxFactory::FactoryCreateBinary
 		//FMessageDialog::Open(EAppMsgType::Ok, MessageDbg, &TitleStr);
 	}
 
+
 	// show Import Option Slate
 	bool bImportAll = false;
 	ImportUI->bIsObjImport = true;//obj mode
 	ImportUI->OriginalImportType = EPMXImportType::PMXIT_SkeletalMesh;
+	ImportUI->MeshName = FString::Printf(TEXT("%s"), *Name.ToString());
 	PMXImportOptions* ImportOptions
 		= GetImportOptions(
 		PmxImporter,
@@ -1004,10 +1006,10 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 						PMX_RIGIDBODY *rb1 = pmx->findRigid(cs.ConstraintBone1);
 						PMX_RIGIDBODY* rb2 = pmx->findRigid(cs.ConstraintBone2);
 						
-						float limdeg = 15;
-						if (rb1&& rb1->OpType == 0) limdeg = 10;
+						float limdeg = 10;
+						if (rb1&& rb1->OpType == 0) limdeg = 15;
 						else {
-							cs.ProfileInstance.TwistLimit.Stiffness = 0.1f;
+							//cs.ProfileInstance.TwistLimit.Stiffness = 0.1f;
 						}
 						//cs.ProfileInstance.AngularDrive.AngularDriveMode = EAngularDriveMode::TwistAndSwing;
 						cs.ProfileInstance.ConeLimit.Swing1Motion = EAngularConstraintMotion::ACM_Limited;

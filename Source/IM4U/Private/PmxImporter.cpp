@@ -306,7 +306,8 @@ namespace MMD4UE4
 			{
 				// 材質名の取得
 				//materialList[i].Name = PMXTexBufferToFString(&Buffer, pmxEncodeType);
-				materialList[i].Name = FString::Printf(TEXT("%d_%s"), i, *PMXTexBufferToFString(&Buffer, pmxEncodeType));
+				materialList[i].Name = FString::Printf(TEXT("%s"), *PMXTexBufferToFString(&Buffer, pmxEncodeType));
+					//FString::Printf(TEXT("%d_%s"), i, *PMXTexBufferToFString(&Buffer, pmxEncodeType));
 				materialList[i].NameEng = PMXTexBufferToFString(&Buffer, pmxEncodeType);
 
 				//Diffuse (R,G,B,A)
