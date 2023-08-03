@@ -9,7 +9,7 @@ https://youtube.com/shorts/7PGy1m9SIRE
 2. Create a  C++ Unreal Engine Project, close.
 3. Get plugin socue code and glm:
  - run cmd in [Project Root]\Plugins
- - git clone --recurse-submodules e https://github.com/axilesoft/IM-for-UE5.git
+ - git clone --recurse-submodules https://github.com/axilesoft/IM-for-UE5.git
 4. Right click UE project file (*.uproject),  select "Generate Visual Studio project files".
 5. Open VS project compile , run.
 
