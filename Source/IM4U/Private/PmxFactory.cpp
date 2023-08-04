@@ -66,6 +66,7 @@ DEFINE_LOG_CATEGORY(LogMMD4UE4_PMXFactory)
 
 using namespace SkeletalMeshImportUtils;
 using namespace MMD4UE4;
+static 	bool bSkipModel = false;
 /////////////////////////////////////////////////////////
 
 UPmxFactory::UPmxFactory(const FObjectInitializer& ObjectInitializer)
@@ -87,6 +88,13 @@ UPmxFactory::UPmxFactory(const FObjectInitializer& ObjectInitializer)
 	bDetectImportTypeOnImport = false;
 
 	//ImportUI = NewObject<UPmxImportUI>(this, NAME_None, RF_NoFlags);
+}
+
+bool UPmxFactory::FactoryCanImport(const FString& Filename)
+{
+	if (Filename.ToLower().EndsWith(L".pmx"))
+	return !bSkipModel;
+	return true;
 }
 
 void UPmxFactory::PostInitProperties()
@@ -227,7 +235,7 @@ UObject* UPmxFactory::FactoryCreateBinary
 		true,//bShowImportDialog, 
 		InParent->GetPathName(),
 		bOperationCanceled,
-		bImportAll,
+		bImportAll,bSkipModel,
 		ImportUI->bIsObjImport,//bIsPmxFormat,
 		bIsPmxFormat,
 		ForcedImportType
@@ -394,6 +402,11 @@ UObject* UPmxFactory::FactoryCreateBinary
 	}
 	else
 	{
+		bOutOperationCanceled = true;
+
+		GEditor->GetEditorSubsystem<UImportSubsystem>()->OnAssetPostImport.Broadcast(this, NULL);
+		return NULL;
+
 		const FText Message 
 			= FText::Format(LOCTEXT("ImportFailed_Generic", 
 				"Failed to import '{0}'. Failed to create asset '{1}'\nMMDモデルの読み込みを中止します。\nIM4U Plugin"),

@@ -38,6 +38,7 @@ PMXImportOptions* GetImportOptions(
 	const FString& FullPath,
 	bool& bOutOperationCanceled,
 	bool& bOutImportAll,
+	bool& skipModel,
 	bool bIsObjFormat,
 	bool bForceImportType,
 	EPMXImportType ImportType 
@@ -49,12 +50,14 @@ PMXImportOptions* GetImportOptions(
 	ImportUI->bImportMaterials = true;
 	ImportUI->bImportTextures = true;
 	ImportUI->bCreateMaterialInstMode = true;
+
 	if (bShowOptionDialog)
 	{
 		bOutImportAll = false;
 
 		PMXImportOptions* ImportOptions 
 			= PmxImporter->GetImportOptions();
+
 		// if Skeleton was set by outside, please make sure copy back to UI
 		if (ImportOptions->SkeletonForAnimation)
 		{
@@ -157,10 +160,14 @@ PMXImportOptions* GetImportOptions(
 			ImportUI->TextureImportData->SaveConfig();
 		}
 #endif
-		if (PmxOptionWindow->ShouldImport())
+		if (PmxOptionWindow->SkipModel())
+		{
+			skipModel = bOutOperationCanceled = true; return NULL;
+		}
+		else if (PmxOptionWindow->ShouldImport())
 		{
 			bOutImportAll = PmxOptionWindow->ShouldImportAll();
-
+ 
 			// open dialog
 			// see if it's canceled
 			ApplyImportUIToImportOptions(ImportUI, *ImportOptions);
@@ -168,7 +175,7 @@ PMXImportOptions* GetImportOptions(
 			return ImportOptions;
 		}
 		else
-		{
+		{			 
 			bOutOperationCanceled = true;
 		}
 	}

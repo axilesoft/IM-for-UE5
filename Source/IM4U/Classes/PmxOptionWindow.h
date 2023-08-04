@@ -34,17 +34,22 @@ public:
 	FReply OnImport()
 	{
 		bShouldImport = true;
+		skipModel = false;
 		if (WidgetWindow.IsValid())
 		{
 			WidgetWindow.Pin()->RequestDestroyWindow();
 		}
 		return FReply::Handled();
 	}
-
 	FReply OnImportAll()
 	{
 		bShouldImportAll = true;
 		return OnImport();
+	}
+	FReply OnDisable()
+	{
+		skipModel = true;
+		return OnCancel();
 	}
 
 	FReply OnCancel()
@@ -78,6 +83,9 @@ public:
 		return bShouldImportAll;
 	}
 
+	bool SkipModel() {
+		return skipModel;
+	}
 	SPmxOptionWindow()
 		: ImportUI(NULL)
 		, bShouldImport(false)
@@ -95,4 +103,5 @@ private:
 	bool			bShouldImport;
 	bool			bShouldImportAll;
 	bool			bIsObjFormat;
+	bool			skipModel = false;
 };

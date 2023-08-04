@@ -31,6 +31,8 @@ class IM4U_API UPmxFactory : public UFactory // public UFbxFactory
 {
 	GENERATED_UCLASS_BODY()
 
+	virtual bool FactoryCanImport(const FString& Filename) override;
+
 	class UPmxImportUI* ImportUI;
 	// Begin UFactory Interface
 	virtual void PostInitProperties() override;

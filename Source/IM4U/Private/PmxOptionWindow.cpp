@@ -74,7 +74,7 @@ void SPmxOptionWindow::Construct(const FArguments& InArgs)
 					/*+ SUniformGridPanel::Slot(0, 0)
 					[
 						IDocumentation::Get()->CreateAnchor(FString("Engine/Content/FBX/ImportOptions"))
-					]*/
+					]
 					+ SUniformGridPanel::Slot(0, 0)
 						[
 							SNew(SButton)
@@ -83,12 +83,20 @@ void SPmxOptionWindow::Construct(const FArguments& InArgs)
 							.ToolTipText(LOCTEXT("MMDOptionWindow_ImportAll_ToolTip", "Import all files with these same settings"))
 							.IsEnabled(this, &SPmxOptionWindow::CanImport)
 							.OnClicked(this, &SPmxOptionWindow::OnImportAll)
-						]
+						]*/
+				+SUniformGridPanel::Slot(0, 0)
+				[
+					SNew(SButton)
+					.HAlign(HAlign_Center)
+				.Text(LOCTEXT("MMDOptionWindow_Disable", "Skip this plugin for model")).ButtonColorAndOpacity(FLinearColor(1.0f, 0.0f, 0.0f,0.5f))
+				.ToolTipText(LOCTEXT("MMDOptionWindow_ImportAll_ToolTip", "Skip model next drag in"))
+				.OnClicked(this, &SPmxOptionWindow::OnDisable)
+				]
 					+ SUniformGridPanel::Slot(1, 0)
 						[
 							SAssignNew(ImportButton, SButton)
 							.HAlign(HAlign_Center)
-							.Text(LOCTEXT("MMDOptionWindow_Import", "Import"))
+							.Text(LOCTEXT("MMDOptionWindow_Import", "Import")).ButtonColorAndOpacity(FLinearColor(0.25f, 1.f, 0.25f,1.f))
 							.IsEnabled(this, &SPmxOptionWindow::CanImport)
 							.OnClicked(this, &SPmxOptionWindow::OnImport)
 						]
