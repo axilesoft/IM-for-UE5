@@ -92,8 +92,8 @@ UPmxFactory::UPmxFactory(const FObjectInitializer& ObjectInitializer)
 
 bool UPmxFactory::FactoryCanImport(const FString& Filename)
 {
-	if (Filename.ToLower().EndsWith(L".pmx"))
-	return !bSkipModel;
+	if (Filename.ToLower().EndsWith(L".pmx") && bSkipModel)
+		return bSkipModel = false;		
 	return true;
 }
 
@@ -558,93 +558,144 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 	}
 
 	// [from USkeletalMeshFactory::FactoryCreateBinary]
-	USkeletalMesh* SkeletalMesh = NewObject<USkeletalMesh>(InParent, Name, Flags);
+	USkeletalMesh* SkeletalMesh{};// = NewObject<USkeletalMesh>(InParent, Name, Flags);
 
-	SkeletalMesh->PreEditChange(NULL);
-
-	FSkeletalMeshImportData TempData;
-	// Fill with data from buffer - contains the full .FBX file. 	
-	FSkeletalMeshImportData* SkelMeshImportDataPtr = &TempData;
-	if (OutData)
+	bool isSK_ = false;
+	if (0 /*!FbxShapeArray*/)
 	{
-		SkelMeshImportDataPtr = OutData;
-	}
+		UObject* ExistingObject = StaticFindObjectFast(UObject::StaticClass(), InParent, *(L"SK_" + Name.ToString()), false, false, EObjectFlags::RF_NoFlags, EInternalObjectFlags::Garbage);//UE4.11~
+		USkeletalMesh* ExistingSkelMesh = Cast<USkeletalMesh>(ExistingObject);
 
-	/*Import Bone Start*/
-	bool bUseTime0AsRefPose = false;// ImportOptions->bUseT0AsRefPose;
-	// Note: importing morph data causes additional passes through this function, so disable the warning dialogs
-	// from popping up again on each additional pass.  
-	if (
-		!ImportBone(
-			//NodeArray, 
-			pmx,
-			*SkelMeshImportDataPtr,
-			//TemplateImportData, 
-			//SortedLinkArray,
-			bDiffPose, 
-			false,//(FbxShapeArray != NULL),
-			bUseTime0AsRefPose)
-			
-			/*false*/
-		)
-	{
-		AddTokenizedErrorMessage(FTokenizedMessage::Create(
-			EMessageSeverity::Error, 
-			LOCTEXT("FbxSkeletaLMeshimport_MultipleRootFound", "Multiple roots found")),"FFbxErrors::SkeletalMesh_MultipleRoots");
-		// I can't delete object here since this is middle of import
-		// but I can move to transient package, and GC will automatically collect it
-		SkeletalMesh->ClearFlags(RF_Standalone);
-		SkeletalMesh->Rename(NULL, GetTransientPackage());
-		return NULL;
-	}
-	/*Import Bone End*/
-
-	/*
-	// Inport  Material @@@@@
-
-	// Create a list of all unique fbx materials.  This needs to be done as a separate pass before reading geometry
-	// so that we know about all possible materials before assigning material indices to each triangle
-	TArray<FbxSurfaceMaterial*> FbxMaterials;
-	for (int32 NodeIndex = 0; NodeIndex < NodeArray.Num(); ++NodeIndex)
-	{
-		Node = NodeArray[NodeIndex];
-
-		int32 MaterialCount = Node->GetMaterialCount();
-
-		for (int32 MaterialIndex = 0; MaterialIndex < MaterialCount; ++MaterialIndex)
+		if (ExistingSkelMesh)
 		{
-			FbxSurfaceMaterial* FbxMaterial = Node->GetMaterial(MaterialIndex);
-			if (!FbxMaterials.Contains(FbxMaterial))
+			isSK_ = true;
+			SkeletalMesh = ExistingSkelMesh;
+		//	(SkeletalMesh= ExistingSkelMesh)->PreEditChange(NULL);
+			//ExistSkelMeshDataPtr = SaveExistingSkelMeshData(ExistingSkelMesh);
+		}
+
+		
+	}
+	if (!SkeletalMesh)
+	{
+		
+			SkeletalMesh = NewObject<USkeletalMesh>(InParent, Name, Flags);
+
+
+		SkeletalMesh->PreEditChange(NULL);
+
+		FSkeletalMeshImportData TempData;
+		// Fill with data from buffer - contains the full .FBX file. 	
+		FSkeletalMeshImportData* SkelMeshImportDataPtr = &TempData;
+		if (OutData)
+		{
+			SkelMeshImportDataPtr = OutData;
+		}
+
+		/*Import Bone Start*/
+		bool bUseTime0AsRefPose = false;// ImportOptions->bUseT0AsRefPose;
+		// Note: importing morph data causes additional passes through this function, so disable the warning dialogs
+		// from popping up again on each additional pass.  
+		if (
+			!ImportBone(
+				//NodeArray, 
+				pmx,
+				*SkelMeshImportDataPtr,
+				//TemplateImportData, 
+				//SortedLinkArray,
+				bDiffPose,
+				false,//(FbxShapeArray != NULL),
+				bUseTime0AsRefPose)
+
+			/*false*/
+			)
+		{
+			AddTokenizedErrorMessage(FTokenizedMessage::Create(
+				EMessageSeverity::Error,
+				LOCTEXT("FbxSkeletaLMeshimport_MultipleRootFound", "Multiple roots found")), "FFbxErrors::SkeletalMesh_MultipleRoots");
+			// I can't delete object here since this is middle of import
+			// but I can move to transient package, and GC will automatically collect it
+			SkeletalMesh->ClearFlags(RF_Standalone);
+			SkeletalMesh->Rename(NULL, GetTransientPackage());
+			return NULL;
+		}
+		/*Import Bone End*/
+
+		/*
+		// Inport  Material @@@@@
+
+		// Create a list of all unique fbx materials.  This needs to be done as a separate pass before reading geometry
+		// so that we know about all possible materials before assigning material indices to each triangle
+		TArray<FbxSurfaceMaterial*> FbxMaterials;
+		for (int32 NodeIndex = 0; NodeIndex < NodeArray.Num(); ++NodeIndex)
+		{
+			Node = NodeArray[NodeIndex];
+
+			int32 MaterialCount = Node->GetMaterialCount();
+
+			for (int32 MaterialIndex = 0; MaterialIndex < MaterialCount; ++MaterialIndex)
 			{
-				FbxMaterials.Add(FbxMaterial);
-				// Add an entry for each unique material
-				SkelMeshImportDataPtr->Materials.Add(VMaterial());
+				FbxSurfaceMaterial* FbxMaterial = Node->GetMaterial(MaterialIndex);
+				if (!FbxMaterials.Contains(FbxMaterial))
+				{
+					FbxMaterials.Add(FbxMaterial);
+					// Add an entry for each unique material
+					SkelMeshImportDataPtr->Materials.Add(VMaterial());
+				}
 			}
 		}
-	}
-	*/
+		*/
 
-	for (int32 MaterialIndex = 0; MaterialIndex < pmx->materialList.Num(); ++MaterialIndex)
-	{
-		// Add an entry for each unique material
-		SkeletalMeshImportData::FMaterial NewMaterial;
-		SkelMeshImportDataPtr->Materials.Add(NewMaterial);
-	}
-	//SkelMeshImportDataPtr->MaxMaterialIndex= pmxMeshInfoPtr->materialList.Num();
-	/*
-	for (int32 NodeIndex = 0; NodeIndex < NodeArray.Num(); ++NodeIndex)
-	{
-		Node = NodeArray[NodeIndex];
-		FbxMesh = Node->GetMesh();
-		FbxSkin* Skin = (FbxSkin*)FbxMesh->GetDeformer(0, FbxDeformer::eSkin);
-		FbxShape* FbxShape = NULL;
-		if (FbxShapeArray)
+		for (int32 MaterialIndex = 0; MaterialIndex < pmx->materialList.Num(); ++MaterialIndex)
 		{
-			FbxShape = (*FbxShapeArray)[NodeIndex];
+			// Add an entry for each unique material
+			SkeletalMeshImportData::FMaterial NewMaterial;
+			SkelMeshImportDataPtr->Materials.Add(NewMaterial);
 		}
+		//SkelMeshImportDataPtr->MaxMaterialIndex= pmxMeshInfoPtr->materialList.Num();
+		/*
+		for (int32 NodeIndex = 0; NodeIndex < NodeArray.Num(); ++NodeIndex)
+		{
+			Node = NodeArray[NodeIndex];
+			FbxMesh = Node->GetMesh();
+			FbxSkin* Skin = (FbxSkin*)FbxMesh->GetDeformer(0, FbxDeformer::eSkin);
+			FbxShape* FbxShape = NULL;
+			if (FbxShapeArray)
+			{
+				FbxShape = (*FbxShapeArray)[NodeIndex];
+			}
 
+			// NOTE: This function may invalidate FbxMesh and set it to point to a an updated version
+			if (!FillSkelMeshImporterFromFbx(*SkelMeshImportDataPtr, FbxMesh, Skin, FbxShape, SortedLinkArray, FbxMaterials))
+			{
+				// I can't delete object here since this is middle of import
+				// but I can move to transient package, and GC will automatically collect it
+				SkeletalMesh->ClearFlags(RF_Standalone);
+				SkeletalMesh->Rename(NULL, GetTransientPackage());
+				return NULL;
+			}
+
+			if (bUseTime0AsRefPose && bDiffPose)
+			{
+				// deform skin vertex to the frame 0 from bind pose
+				SkinControlPointsToPose(*SkelMeshImportDataPtr, FbxMesh, FbxShape, true);
+			}
+		}
+		*/
 		// NOTE: This function may invalidate FbxMesh and set it to point to a an updated version
-		if (!FillSkelMeshImporterFromFbx(*SkelMeshImportDataPtr, FbxMesh, Skin, FbxShape, SortedLinkArray, FbxMaterials))
+		if ( //CREATE MATERIAL
+			!FillSkelMeshImporterFromFbx(
+				*SkelMeshImportDataPtr,
+				pmx
+				/*
+				SkeletalMesh,
+				Skin,
+				FbxShape,
+				SortedLinkArray,
+				FbxMaterials*/
+			)
+			)
+			/*false*/
 		{
 			// I can't delete object here since this is middle of import
 			// but I can move to transient package, and GC will automatically collect it
@@ -653,229 +704,201 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 			return NULL;
 		}
 
-		if (bUseTime0AsRefPose && bDiffPose)
-		{
-			// deform skin vertex to the frame 0 from bind pose
-			SkinControlPointsToPose(*SkelMeshImportDataPtr, FbxMesh, FbxShape, true);
-		}
-	}
+		// reorder material according to "SKinXX" in material name
+		/*SetMaterialSkinXXOrder(*SkelMeshImportDataPtr);
 	*/
-	// NOTE: This function may invalidate FbxMesh and set it to point to a an updated version
-	if (
-		!FillSkelMeshImporterFromFbx(
-			*SkelMeshImportDataPtr,
-			pmx
-			/*
-			SkeletalMesh,
-			Skin, 
-			FbxShape,
-			SortedLinkArray, 
-			FbxMaterials*/
+		if (/*ImportOptions->bPreserveSmoothingGroups*/
+			false//true
 			)
-		)
-		/*false*/
-	{
-		// I can't delete object here since this is middle of import
-		// but I can move to transient package, and GC will automatically collect it
-		SkeletalMesh->ClearFlags(RF_Standalone);
-		SkeletalMesh->Rename(NULL, GetTransientPackage());
-		return NULL;
-	}
-
-	// reorder material according to "SKinXX" in material name
-	/*SetMaterialSkinXXOrder(*SkelMeshImportDataPtr);
-*/
-	if (/*ImportOptions->bPreserveSmoothingGroups*/
-		false//true
-		)
-	{
-		//DoUnSmoothVerts(*SkelMeshImportDataPtr);
-	}
-	else
-	{
-		SkelMeshImportDataPtr->PointToRawMap.AddUninitialized(SkelMeshImportDataPtr->Points.Num());
-		for (int32 PointIdx = 0; PointIdx<SkelMeshImportDataPtr->Points.Num(); PointIdx++)
 		{
-			SkelMeshImportDataPtr->PointToRawMap[PointIdx] = PointIdx;
+			//DoUnSmoothVerts(*SkelMeshImportDataPtr);
 		}
-	}
-
-	// process materials from import data
-	ProcessImportMeshMaterials(SkeletalMesh->GetMaterials(), *SkelMeshImportDataPtr);
-
-	// process reference skeleton from import data
-	int32 SkeletalDepth = 0;
-	if (!ProcessImportMeshSkeleton(SkeletalMesh->GetSkeleton(), SkeletalMesh->GetRefSkeleton(), SkeletalDepth, *SkelMeshImportDataPtr))
-	{
-		SkeletalMesh->ClearFlags(RF_Standalone);
-		SkeletalMesh->Rename(NULL, GetTransientPackage());
-		return NULL;
-	}
-	UE_LOG(LogMMD4UE4_PMXFactory, Warning, TEXT("Bones digested - %i  Depth of hierarchy - %i"), SkeletalMesh->GetRefSkeleton().GetNum(), SkeletalDepth);
-
-	// process bone influences from import data
-	SkeletalMeshImportUtils::ProcessImportMeshInfluences(*SkelMeshImportDataPtr,L"MMDMeshName");
-
-
-	SkeletalMesh->PreEditChange(NULL);
-	//Dirty the DDC Key for any imported Skeletal Mesh
-	SkeletalMesh->InvalidateDeriveDataCacheGUID();
-
-	FSkeletalMeshModel* ImportedResource = SkeletalMesh->GetImportedModel();
-	check(ImportedResource->LODModels.Num() == 0);
-	ImportedResource->LODModels.Empty();
-	ImportedResource->LODModels.Add(new FSkeletalMeshLODModel());
-	const int32 ImportLODModelIndex = 0;
-	FSkeletalMeshLODModel& LODModel = ImportedResource->LODModels[ImportLODModelIndex];
-
-	SkeletalMesh->SaveLODImportedData(0, *SkelMeshImportDataPtr);
-
-	{
-		//We reimport both
-		SkeletalMesh->SetLODImportedDataVersions(ImportLODModelIndex, ESkeletalMeshGeoImportVersions::LatestVersion, ESkeletalMeshSkinningImportVersions::LatestVersion);
-	}
-	SkeletalMesh->ResetLODInfo();
-	FSkeletalMeshLODInfo & NewLODInfo = SkeletalMesh->AddLODInfo();
-	NewLODInfo.ReductionSettings.NumOfTrianglesPercentage = 1.0f;
-	NewLODInfo.ReductionSettings.NumOfVertPercentage = 1.0f;
-	NewLODInfo.ReductionSettings.MaxDeviationPercentage = 0.0f;
-	NewLODInfo.LODHysteresis = 0.02f;
-
-	// Create initial bounding box based on expanded version of reference pose for meshes without physics assets. Can be overridden by artist.
-	FBox3f BoundingBox(SkelMeshImportDataPtr->Points.GetData(), SkelMeshImportDataPtr->Points.Num());
-	FBox3f Temp = BoundingBox;
-	FVector3f MidMesh = 0.5f*(Temp.Min + Temp.Max);
-	BoundingBox.Min = Temp.Min + 1.0f*(Temp.Min - MidMesh);
-	BoundingBox.Max = Temp.Max + 1.0f*(Temp.Max - MidMesh);
-	// Tuck up the bottom as this rarely extends lower than a reference pose's (e.g. having its feet on the floor).
-	// Maya has Y in the vertical, other packages have Z.
-	//BEN const int32 CoordToTuck = bAssumeMayaCoordinates ? 1 : 2;
-	//BEN BoundingBox.Min[CoordToTuck]	= Temp.Min[CoordToTuck] + 0.1f*(Temp.Min[CoordToTuck] - MidMesh[CoordToTuck]);
-	BoundingBox.Min[2] = Temp.Min[2] + 0.1f*(Temp.Min[2] - MidMesh[2]);
-#if 0 /* under ~ UE4.11 */
-	SkeletalMesh->Bounds = FBoxSphereBounds(BoundingBox);
-#else /* over UE4.12 ~*/
-	SkeletalMesh->SetImportedBounds( FBoxSphereBounds(FBox(BoundingBox)) );
-#endif
-
-	// Store whether or not this mesh has vertex colors
-	SkeletalMesh->SetHasVertexColors(SkelMeshImportDataPtr->bHasVertexColors);
-	SkeletalMesh->SetVertexColorGuid(SkeletalMesh->GetHasVertexColors() ? FGuid::NewGuid() : FGuid());
-	// Release the static mesh's resources.
-	SkeletalMesh->ReleaseResources();
-
-	// Flush the resource release commands to the rendering thread to ensure that the build doesn't occur while a resource is still
-	// allocated, and potentially accessing the UStaticMesh.
-	SkeletalMesh->ReleaseResourcesFence.Wait();
-
-
-
-	// Pass the number of texture coordinate sets to the LODModel.  Ensure there is at least one UV coord
-	LODModel.NumTexCoords = FMath::Max<uint32>(1, SkelMeshImportDataPtr->NumTexCoords);
-#if 1
-	if (bCreateRenderData)
-	{
-		TArray<FVector3f> LODPoints;
-		TArray<SkeletalMeshImportData::FMeshWedge> LODWedges;
-		TArray<SkeletalMeshImportData::FMeshFace> LODFaces;
-		TArray<SkeletalMeshImportData::FVertInfluence> LODInfluences;
-		TArray<int32> LODPointToRawMap;
-		SkelMeshImportDataPtr->CopyLODImportData(LODPoints, LODWedges, LODFaces, LODInfluences, LODPointToRawMap);
-
-		const bool bShouldComputeNormals = true/*!ImportOptions->ShouldImportNormals()*/ || !SkelMeshImportDataPtr->bHasNormals;
-		const bool bShouldComputeTangents = true/*!ImportOptions->ShouldImportTangents()*/ || !SkelMeshImportDataPtr->bHasTangents;
-
-		IMeshUtilities& MeshUtilities = FModuleManager::Get().LoadModuleChecked<IMeshUtilities>("MeshUtilities");
-
-		TArray<FText> WarningMessages;
-		TArray<FName> WarningNames;
-		// Create actual rendering data.
-#if 0 /* under ~ UE4.10 */
-		if (!MeshUtilities.BuildSkeletalMesh(
-			ImportedResource->LODModels[0], 
-			SkeletalMesh->GetRefSkeleton(),
-			LODInfluences,
-			LODWedges,
-			LODFaces,
-			LODPoints, 
-			LODPointToRawMap,
-			false,//ImportOptions->bKeepOverlappingVertices, 
-			bShouldComputeNormals, 
-			bShouldComputeTangents,
-			&WarningMessages, 
-			&WarningNames)
-			)
-#else /* UE4.11~ over */
-		if (!MeshUtilities.BuildSkeletalMesh(
-			ImportedResource->LODModels[0],"MMDMeshName",
-			SkeletalMesh->GetRefSkeleton(),
-			LODInfluences,
-			LODWedges,
-			LODFaces,
-			LODPoints,
-			LODPointToRawMap)
-			)
-#endif
+		else
 		{
-			if (WarningNames.Num() == WarningMessages.Num())
+			SkelMeshImportDataPtr->PointToRawMap.AddUninitialized(SkelMeshImportDataPtr->Points.Num());
+			for (int32 PointIdx = 0; PointIdx < SkelMeshImportDataPtr->Points.Num(); PointIdx++)
 			{
-				// temporary hack of message/names, should be one token or a struct
-				for (int32 MessageIdx = 0; MessageIdx<WarningMessages.Num(); ++MessageIdx)
-				{
-					AddTokenizedErrorMessage(FTokenizedMessage::Create(EMessageSeverity::Error, WarningMessages[MessageIdx]), WarningNames[MessageIdx]);
-				}
+				SkelMeshImportDataPtr->PointToRawMap[PointIdx] = PointIdx;
 			}
+		}
 
-			SkeletalMesh->MarkAsGarbage();
+		// process materials from import data
+		ProcessImportMeshMaterials(SkeletalMesh->GetMaterials(), *SkelMeshImportDataPtr);
+
+		// process reference skeleton from import data
+		int32 SkeletalDepth = 0;
+		if (!ProcessImportMeshSkeleton(SkeletalMesh->GetSkeleton(), SkeletalMesh->GetRefSkeleton(), SkeletalDepth, *SkelMeshImportDataPtr))
+		{
+			SkeletalMesh->ClearFlags(RF_Standalone);
+			SkeletalMesh->Rename(NULL, GetTransientPackage());
 			return NULL;
 		}
-		else if (WarningMessages.Num() > 0)
+		UE_LOG(LogMMD4UE4_PMXFactory, Warning, TEXT("Bones digested - %i  Depth of hierarchy - %i"), SkeletalMesh->GetRefSkeleton().GetNum(), SkeletalDepth);
+
+		// process bone influences from import data
+		SkeletalMeshImportUtils::ProcessImportMeshInfluences(*SkelMeshImportDataPtr, L"MMDMeshName");
+
+
+		SkeletalMesh->PreEditChange(NULL);
+		//Dirty the DDC Key for any imported Skeletal Mesh
+		SkeletalMesh->InvalidateDeriveDataCacheGUID();
+
+		FSkeletalMeshModel* ImportedResource = SkeletalMesh->GetImportedModel();
+		check(ImportedResource->LODModels.Num() == 0);
+		ImportedResource->LODModels.Empty();
+		ImportedResource->LODModels.Add(new FSkeletalMeshLODModel());
+		const int32 ImportLODModelIndex = 0;
+		FSkeletalMeshLODModel& LODModel = ImportedResource->LODModels[ImportLODModelIndex];
+
+		SkeletalMesh->SaveLODImportedData(0, *SkelMeshImportDataPtr);
+
 		{
-			// temporary hack of message/names, should be one token or a struct
-			if (WarningNames.Num() == WarningMessages.Num())
+			//We reimport both
+			SkeletalMesh->SetLODImportedDataVersions(ImportLODModelIndex, ESkeletalMeshGeoImportVersions::LatestVersion, ESkeletalMeshSkinningImportVersions::LatestVersion);
+		}
+		SkeletalMesh->ResetLODInfo();
+		FSkeletalMeshLODInfo& NewLODInfo = SkeletalMesh->AddLODInfo();
+		NewLODInfo.ReductionSettings.NumOfTrianglesPercentage = 1.0f;
+		NewLODInfo.ReductionSettings.NumOfVertPercentage = 1.0f;
+		NewLODInfo.ReductionSettings.MaxDeviationPercentage = 0.0f;
+		NewLODInfo.LODHysteresis = 0.02f;
+
+		// Create initial bounding box based on expanded version of reference pose for meshes without physics assets. Can be overridden by artist.
+		FBox3f BoundingBox(SkelMeshImportDataPtr->Points.GetData(), SkelMeshImportDataPtr->Points.Num());
+		FBox3f Temp = BoundingBox;
+		FVector3f MidMesh = 0.5f * (Temp.Min + Temp.Max);
+		BoundingBox.Min = Temp.Min + 1.0f * (Temp.Min - MidMesh);
+		BoundingBox.Max = Temp.Max + 1.0f * (Temp.Max - MidMesh);
+		// Tuck up the bottom as this rarely extends lower than a reference pose's (e.g. having its feet on the floor).
+		// Maya has Y in the vertical, other packages have Z.
+		//BEN const int32 CoordToTuck = bAssumeMayaCoordinates ? 1 : 2;
+		//BEN BoundingBox.Min[CoordToTuck]	= Temp.Min[CoordToTuck] + 0.1f*(Temp.Min[CoordToTuck] - MidMesh[CoordToTuck]);
+		BoundingBox.Min[2] = Temp.Min[2] + 0.1f * (Temp.Min[2] - MidMesh[2]);
+#if 0 /* under ~ UE4.11 */
+		SkeletalMesh->Bounds = FBoxSphereBounds(BoundingBox);
+#else /* over UE4.12 ~*/
+		SkeletalMesh->SetImportedBounds(FBoxSphereBounds(FBox(BoundingBox)));
+#endif
+
+		// Store whether or not this mesh has vertex colors
+		SkeletalMesh->SetHasVertexColors(SkelMeshImportDataPtr->bHasVertexColors);
+		SkeletalMesh->SetVertexColorGuid(SkeletalMesh->GetHasVertexColors() ? FGuid::NewGuid() : FGuid());
+		// Release the static mesh's resources.
+		SkeletalMesh->ReleaseResources();
+
+		// Flush the resource release commands to the rendering thread to ensure that the build doesn't occur while a resource is still
+		// allocated, and potentially accessing the UStaticMesh.
+		SkeletalMesh->ReleaseResourcesFence.Wait();
+
+
+
+		// Pass the number of texture coordinate sets to the LODModel.  Ensure there is at least one UV coord
+		LODModel.NumTexCoords = FMath::Max<uint32>(1, SkelMeshImportDataPtr->NumTexCoords);
+#if 1
+		if (bCreateRenderData)
+		{
+			TArray<FVector3f> LODPoints;
+			TArray<SkeletalMeshImportData::FMeshWedge> LODWedges;
+			TArray<SkeletalMeshImportData::FMeshFace> LODFaces;
+			TArray<SkeletalMeshImportData::FVertInfluence> LODInfluences;
+			TArray<int32> LODPointToRawMap;
+			SkelMeshImportDataPtr->CopyLODImportData(LODPoints, LODWedges, LODFaces, LODInfluences, LODPointToRawMap);
+
+			const bool bShouldComputeNormals = true/*!ImportOptions->ShouldImportNormals()*/ || !SkelMeshImportDataPtr->bHasNormals;
+			const bool bShouldComputeTangents = true/*!ImportOptions->ShouldImportTangents()*/ || !SkelMeshImportDataPtr->bHasTangents;
+
+			IMeshUtilities& MeshUtilities = FModuleManager::Get().LoadModuleChecked<IMeshUtilities>("MeshUtilities");
+
+			TArray<FText> WarningMessages;
+			TArray<FName> WarningNames;
+			// Create actual rendering data.
+#if 0 /* under ~ UE4.10 */
+			if (!MeshUtilities.BuildSkeletalMesh(
+				ImportedResource->LODModels[0],
+				SkeletalMesh->GetRefSkeleton(),
+				LODInfluences,
+				LODWedges,
+				LODFaces,
+				LODPoints,
+				LODPointToRawMap,
+				false,//ImportOptions->bKeepOverlappingVertices, 
+				bShouldComputeNormals,
+				bShouldComputeTangents,
+				&WarningMessages,
+				&WarningNames)
+				)
+#else /* UE4.11~ over */
+			if (!MeshUtilities.BuildSkeletalMesh(
+				ImportedResource->LODModels[0], "MMDMeshName",
+				SkeletalMesh->GetRefSkeleton(),
+				LODInfluences,
+				LODWedges,
+				LODFaces,
+				LODPoints,
+				LODPointToRawMap)
+				)
+#endif
+			{
+				if (WarningNames.Num() == WarningMessages.Num())
+				{
+					// temporary hack of message/names, should be one token or a struct
+					for (int32 MessageIdx = 0; MessageIdx < WarningMessages.Num(); ++MessageIdx)
+					{
+						AddTokenizedErrorMessage(FTokenizedMessage::Create(EMessageSeverity::Error, WarningMessages[MessageIdx]), WarningNames[MessageIdx]);
+					}
+				}
+
+				SkeletalMesh->MarkAsGarbage();
+				return NULL;
+			}
+			else if (WarningMessages.Num() > 0)
 			{
 				// temporary hack of message/names, should be one token or a struct
-				for (int32 MessageIdx = 0; MessageIdx<WarningMessages.Num(); ++MessageIdx)
+				if (WarningNames.Num() == WarningMessages.Num())
 				{
-					AddTokenizedErrorMessage(FTokenizedMessage::Create(EMessageSeverity::Warning, WarningMessages[MessageIdx]), WarningNames[MessageIdx]);
+					// temporary hack of message/names, should be one token or a struct
+					for (int32 MessageIdx = 0; MessageIdx < WarningMessages.Num(); ++MessageIdx)
+					{
+						AddTokenizedErrorMessage(FTokenizedMessage::Create(EMessageSeverity::Warning, WarningMessages[MessageIdx]), WarningNames[MessageIdx]);
+					}
 				}
 			}
-		}
 
-		// Presize the per-section shadow casting array with the number of sections in the imported LOD.
-		const int32 NumSections = LODModel.Sections.Num();
-		for (int32 SectionIndex = 0; SectionIndex < NumSections; ++SectionIndex)
-		{
-			SkeletalMesh->GetLODInfo(0)->LODMaterialMap.Add(SectionIndex);
-		}
-
-		if (ExistSkelMeshDataPtr)
-		{
-//			RestoreExistingSkelMeshData(ExistSkelMeshDataPtr, SkeletalMesh);
-		}
-
-		// Store the current file path and timestamp for re-import purposes
-		/*UFbxSkeletalMeshImportData* ImportData = UFbxSkeletalMeshImportData::GetImportDataForSkeletalMesh(SkeletalMesh, TemplateImportData);
-		SkeletalMesh->AssetImportData->SourceFilePath = FReimportManager::SanitizeImportFilename(UFactory::CurrentFilename, SkeletalMesh);
-		SkeletalMesh->AssetImportData->SourceFileTimestamp = IFileManager::Get().GetTimeStamp(*UFactory::CurrentFilename).ToString();
-		SkeletalMesh->AssetImportData->bDirty = false;
-		*/
-		SkeletalMesh->GetAssetImportData()->Update(UFactory::CurrentFilename);
-
-		SkeletalMesh->CalculateInvRefMatrices();
-		SkeletalMesh->PostEditChange();
-		SkeletalMesh->MarkPackageDirty();
-
-		// Now iterate over all skeletal mesh components re-initialising them.
-		for (TObjectIterator<USkeletalMeshComponent> It; It; ++It)
-		{
-			USkeletalMeshComponent* SkelComp = *It;
-			if (SkelComp->GetSkeletalMeshAsset() == SkeletalMesh)
+			// Presize the per-section shadow casting array with the number of sections in the imported LOD.
+			const int32 NumSections = LODModel.Sections.Num();
+			for (int32 SectionIndex = 0; SectionIndex < NumSections; ++SectionIndex)
 			{
-				FComponentReregisterContext ReregisterContext(SkelComp);
+				SkeletalMesh->GetLODInfo(0)->LODMaterialMap.Add(SectionIndex);
 			}
-		}
+
+			if (ExistSkelMeshDataPtr)
+			{
+				//			RestoreExistingSkelMeshData(ExistSkelMeshDataPtr, SkeletalMesh);
+			}
+
+			// Store the current file path and timestamp for re-import purposes
+			/*UFbxSkeletalMeshImportData* ImportData = UFbxSkeletalMeshImportData::GetImportDataForSkeletalMesh(SkeletalMesh, TemplateImportData);
+			SkeletalMesh->AssetImportData->SourceFilePath = FReimportManager::SanitizeImportFilename(UFactory::CurrentFilename, SkeletalMesh);
+			SkeletalMesh->AssetImportData->SourceFileTimestamp = IFileManager::Get().GetTimeStamp(*UFactory::CurrentFilename).ToString();
+			SkeletalMesh->AssetImportData->bDirty = false;
+			*/
+			SkeletalMesh->GetAssetImportData()->Update(UFactory::CurrentFilename);
+
+			SkeletalMesh->CalculateInvRefMatrices();
+			SkeletalMesh->PostEditChange();
+			SkeletalMesh->MarkPackageDirty();
+
+			// Now iterate over all skeletal mesh components re-initialising them.
+			for (TObjectIterator<USkeletalMeshComponent> It; It; ++It)
+			{
+				USkeletalMeshComponent* SkelComp = *It;
+				if (SkelComp->GetSkeletalMeshAsset() == SkeletalMesh)
+				{
+					FComponentReregisterContext ReregisterContext(SkelComp);
+				}
+			}
 	}
+}
 #endif
 #if 1 //phy
 	if (InParent != GetTransientPackage())
@@ -916,25 +939,55 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 						ObjectTools::DeleteObjects(ObjectsToDelete, false);
 					}
 					//NewPhysicsAsset->PreEditChange(NULL);
-
+					NewPhysicsAsset->PhysicalAnimationProfiles.Add(TEXT("mmdProfile"));
+					NewPhysicsAsset->PhysicalAnimationProfiles.Add(TEXT("mmdLowStr"));
 					int bdn = NewPhysicsAsset->SkeletalBodySetups.Num(); 
 					for (int i = 0; i < bdn; i++)
 					{
 						TObjectPtr<USkeletalBodySetup>& bd = NewPhysicsAsset->SkeletalBodySetups[i];
 						USkeletalBodySetup* pbd = bd.Get();
+						pbd->Modify();
 						FName bname = pbd->BoneName;// pbd->GetFName();
 						TArray<PMX_RIGIDBODY> rbs = pmx->findRigids(bname);
 						
 						
+						if (rbs.Num() < 1 || rbs[0].Mass < 0.001 || rbs[0].group < 3)
+						{
+							pbd->PhysicsType = PhysType_Default;
+
+							FPhysicalAnimationProfile* p;
+							pbd->AddPhysicalAnimationProfile(TEXT("mmdProfile")); 
+							p = pbd->FindPhysicalAnimationProfile(TEXT("mmdProfile"));
+							p->PhysicalAnimationData.bIsLocalSimulation = false;
+							p->PhysicalAnimationData.OrientationStrength = 1000;
+							p->PhysicalAnimationData.AngularVelocityStrength = 100;
+							p->PhysicalAnimationData.PositionStrength = 5000;
+							p->PhysicalAnimationData.VelocityStrength = 100;
+							pbd->AddPhysicalAnimationProfile(TEXT("mmdLowStr"));
+							p = pbd->FindPhysicalAnimationProfile(TEXT("mmdLowStr"));
+							p->PhysicalAnimationData.bIsLocalSimulation = false;
+							p->PhysicalAnimationData.OrientationStrength = 100;
+							p->PhysicalAnimationData.AngularVelocityStrength = 1;
+							p->PhysicalAnimationData.PositionStrength = 100;
+							p->PhysicalAnimationData.VelocityStrength = 1;
+
+
+						}
+						else
+						{
+							pbd->PhysicsType = PhysType_Simulated;
+						}
 						
+
 						FKAggregateGeom& ag = pbd->AggGeom;
 						
 						ag.EmptyElements();
+
 						if (rbs.Num()<1) {
 							FKBoxElem ke(0.5,0.5,1);
 							
 							ag.BoxElems.Add(ke);
-							pbd->PhysicsType = PhysType_Kinematic; 
+							pbd->PhysicsType = PhysType_Default;
 							pbd->CollisionReponse = EBodyCollisionResponse::BodyCollision_Disabled;
 							
 							ke.SetContributeToMass(false);
@@ -944,15 +997,7 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 						
 						for (auto rb:rbs) {
 							
-							if (  rb.Mass < 0.001 || rb.group < 3)
-							{
-								pbd->PhysicsType = PhysType_Kinematic;
 
-							}
-							else
-							{
-								
-							}
 							FTransform ft;
 							ft.SetLocation((FVector)rb.Position);
 							//FQuat qd  = FRotator(rb.Rotation.X * 180.f / PI, rb.Rotation.Y * 180.f / PI, rb.Rotation.Z * 180.f / PI).Quaternion();
@@ -1089,56 +1134,64 @@ NewPhysicsAsset->SkeletalBodySetups.Add();
 			}
 		}
 
-		// see if we have skeleton set up
-		// if creating skeleton, create skeleeton
-		USkeleton* Skeleton = NULL;
-		//Skeleton = ImportOptions->SkeletonForAnimation;
-		if (Skeleton == NULL)
+		if (!isSK_)
 		{
-			FString ObjectName = FString::Printf(TEXT("%s_Skeleton"), *SkeletalMesh->GetName());
-			Skeleton = CreateAsset<USkeleton>(InParent->GetName(), ObjectName, true); 
-			if (!Skeleton)
+			// see if we have skeleton set up
+			// if creating skeleton, create skeleeton
+			USkeleton* Skeleton = NULL;
+			//Skeleton = ImportOptions->SkeletonForAnimation;
+			if (Skeleton == NULL)
 			{
-				// same object exists, try to see if it's skeleton, if so, load
-				Skeleton = LoadObject<USkeleton>(InParent, *ObjectName);
-
-				// if not skeleton, we're done, we can't create skeleton with same name
-				// @todo in the future, we'll allow them to rename
+				FString ObjectName = FString::Printf( TEXT("%s_Skeleton"), *SkeletalMesh->GetName());
+				if (isSK_) {
+					ObjectName = FString::Printf(TEXT("SKEL_%s"), *Name.ToString());
+					Skeleton = SkeletalMesh->GetSkeleton();
+				}
+				else 
+					Skeleton = CreateAsset<USkeleton>(InParent->GetName(), ObjectName, true);
 				if (!Skeleton)
 				{
-					AddTokenizedErrorMessage(FTokenizedMessage::Create(EMessageSeverity::Error, FText::Format(LOCTEXT("FbxSkeletaLMeshimport_SkeletonRecreateError", "'{0}' already exists. It fails to recreate it."), FText::FromString(ObjectName))),"FFbxErrors::SkeletalMesh_SkeletonRecreateError");
-					return SkeletalMesh;
+					// same object exists, try to see if it's skeleton, if so, load
+					Skeleton = LoadObject<USkeleton>(InParent, *ObjectName);
+
+					// if not skeleton, we're done, we can't create skeleton with same name
+					// @todo in the future, we'll allow them to rename
+					if (!Skeleton)
+					{
+						AddTokenizedErrorMessage(FTokenizedMessage::Create(EMessageSeverity::Error, FText::Format(LOCTEXT("FbxSkeletaLMeshimport_SkeletonRecreateError", "'{0}' already exists. It fails to recreate it."), FText::FromString(ObjectName))), "FFbxErrors::SkeletalMesh_SkeletonRecreateError");
+						return SkeletalMesh;
+					}
 				}
 			}
-		}
-		
-		// merge bones to the selected skeleton
-		if ( !Skeleton->MergeAllBonesToBoneTree( SkeletalMesh ) )
-		{
-			if (EAppReturnType::Yes == FMessageDialog::Open(EAppMsgType::YesNo,
-				LOCTEXT("SkeletonFailed_BoneMerge", "FAILED TO MERGE BONES:\n\n This could happen if significant hierarchical change has been made\n - i.e. inserting bone between nodes\n Would you like to regenerate Skeleton from this mesh? \n\n ***WARNING: THIS WILL REQUIRE RECOMPRESS ALL ANIMATION DATA AND POTENTIALLY INVALIDATE***\n")))
+
+			// merge bones to the selected skeleton
+			if (!Skeleton->MergeAllBonesToBoneTree(SkeletalMesh))
 			{
-				if (Skeleton->RecreateBoneTree(SkeletalMesh))
+				if (EAppReturnType::Yes == FMessageDialog::Open(EAppMsgType::YesNo,
+					LOCTEXT("SkeletonFailed_BoneMerge", "FAILED TO MERGE BONES:\n\n This could happen if significant hierarchical change has been made\n - i.e. inserting bone between nodes\n Would you like to regenerate Skeleton from this mesh? \n\n ***WARNING: THIS WILL REQUIRE RECOMPRESS ALL ANIMATION DATA AND POTENTIALLY INVALIDATE***\n")))
 				{
+					if (Skeleton->RecreateBoneTree(SkeletalMesh))
+					{
+						FAssetNotifications::SkeletonNeedsToBeSaved(Skeleton);
+					}
+				}
+			}
+			else
+			{
+				/*
+				// ask if they'd like to update their position form this mesh
+				if ( ImportOptions->SkeletonForAnimation && ImportOptions->bUpdateSkeletonReferencePose )
+				{
+					Skeleton->UpdateReferencePoseFromMesh(SkeletalMesh);
 					FAssetNotifications::SkeletonNeedsToBeSaved(Skeleton);
 				}
+				*/
 			}
-		}
-		else
-		{
-			/*
-			// ask if they'd like to update their position form this mesh
-			if ( ImportOptions->SkeletonForAnimation && ImportOptions->bUpdateSkeletonReferencePose ) 
+			if (SkeletalMesh->GetSkeleton() != Skeleton)
 			{
-				Skeleton->UpdateReferencePoseFromMesh(SkeletalMesh);
-				FAssetNotifications::SkeletonNeedsToBeSaved(Skeleton);
+				SkeletalMesh->SetSkeleton(Skeleton);
+				SkeletalMesh->MarkPackageDirty();
 			}
-			*/
-		}
-		if (SkeletalMesh->GetSkeleton() != Skeleton)
-		{
-			SkeletalMesh->SetSkeleton(Skeleton);
-			SkeletalMesh->MarkPackageDirty();
 		}
 	}
 #endif

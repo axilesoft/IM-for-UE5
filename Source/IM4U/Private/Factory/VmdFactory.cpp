@@ -256,6 +256,8 @@ InportOption画面にて指定することで取り込むことが可能です�
 			Skeleton = ImportUI->Skeleton;
 			SkeletalMesh = ImportUI->SkeletonMesh;
 			/* 最低限のパラメータ設定チェック */
+			if (!Skeleton && SkeletalMesh)
+				Skeleton = SkeletalMesh->GetSkeleton();
 			if ( (!Skeleton) 
 				||  (SkeletalMesh) && (Skeleton != SkeletalMesh->GetSkeleton())
 				)
@@ -302,8 +304,8 @@ Retry ImportOption!"
 		}
 		if (ImportOptions)
 		{
-			Skeleton = ImportUI->Skeleton;
-			SkeletalMesh = ImportUI->SkeletonMesh;
+			if (!Skeleton) Skeleton = ImportUI->Skeleton;
+			if (!SkeletalMesh) SkeletalMesh = ImportUI->SkeletonMesh;
 			bool preParamChk = true;/*ParameterチェックOK有無*/
 			/*包含関係チェック*/
 			if (SkeletalMesh)
@@ -410,7 +412,8 @@ UAnimSequence * UVmdFactory::ImportAnimations(
 	UAnimSequence* LastCreatedAnim = NULL;
 
 
-
+	if (!Skeleton)
+		Skeleton = SkeletalMesh->GetSkeleton();
 	// we need skeleton to create animsequence
 	if (Skeleton == NULL)
 	{
@@ -680,11 +683,17 @@ bool UVmdFactory::ImportMorphCurveToAnimSequence(
 	MMD4UE4::VmdMotionInfo* vmdMotionInfo
 	)
 {
-	if (!DestSeq || !Skeleton || !vmdMotionInfo)
+	if (!DestSeq  || !vmdMotionInfo)
 	{
 		//TBD:: ERR in Param...
 		return false;
 	}
+
+	auto& adc = DestSeq->GetController();
+
+	const bool bShouldTransact = true;
+	adc.OpenBracket(LOCTEXT("ImportAsSkeletalMesh", "Importing VMD Animation"), bShouldTransact);
+
 	//USkeletalMesh * mesh = Skeleton->GetAssetPreviewMesh(DestSeq);// GetPreviewMesh();
 	USkeletalMesh * mesh = SkeletalMesh;
 	if (!mesh)
@@ -738,6 +747,8 @@ bool UVmdFactory::ImportMorphCurveToAnimSequence(
 			// mark skeleton dirty
 			Skeleton->Modify();
 		}
+
+#if 1
 
 		FSmartName NewName;
 		Skeleton->AddSmartNameAndModify(USkeleton::AnimCurveMappingName, Name, NewName);
@@ -800,7 +811,16 @@ bool UVmdFactory::ImportMorphCurveToAnimSequence(
 				*Name.ToString(), *vmdFaceTrackPtr->TrackName, vmdFaceTrackPtr->keyList.Num() );
 		}
 		/***********************************************************************************/
+
+#else
+
+
+#endif
 	}
+
+
+	adc.NotifyPopulated();
+	adc.CloseBracket();
 	return true;
 }
 
@@ -1169,11 +1189,15 @@ bool UVmdFactory::ImportVMDToAnimSequence(
 						FVector(1, 1, 1)
 						);
 					//リファレンスポーズからKeyのポーズ分移動させた値を初期値とする
-					RawTrack.PosKeys.Add(FVector3f(tempTranceform.GetTranslation() + refTranslation));
+					auto poskey = FVector3f(tempTranceform.GetTranslation() + refTranslation);
+					RawTrack.PosKeys.Add(poskey);
 					RawTrack.RotKeys.Add(FQuat4f(tempTranceform.GetRotation()));
 					RawTrack.ScaleKeys.Add(FVector3f(tempTranceform.GetScale3D()));
-
-
+					//if (BoneIndex==3)
+					//UE_LOG(LogMMD4UE4_VMDFactory, Warning,
+					//	TEXT("P %8.2f,  %8.2f,  %8.2f"),
+					//	poskey.X, poskey.Y, poskey.Z
+					//);
 
 					if (nextKeyFrame == i)
 					{

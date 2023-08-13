@@ -81,29 +81,39 @@ namespace MMD4UE4
 	//////////////////////////////////////
 	uint32 MMDImportHelper::MMDExtendBufferSizeToUint32(
 		const uint8 ** buffer,
-		const uint8  blockSize
+		const uint8  blockSize, uint32 offset
 		)
 	{
 		uint32 retValue = 0;
 
 		switch (blockSize)
 		{
-		case 1:
-			retValue = (uint8)((*buffer)[0]);
+		case 1: {
+			auto rv = (uint8)((*buffer)[0]);
+			if (rv == 0xff)
+				retValue = -1;
+			else
+				retValue = (uint32)rv ;
 			*buffer += blockSize;
-			break;
+		}break;
 
-		case 2:
-			retValue = (uint16)(((uint16 *)*buffer)[0]);
+		case 2: {
+			auto rv = (uint16)(((uint16*)*buffer)[0]);
+			if (rv == 0xffff) 
+				retValue = -1;				
+			else
+				retValue = (uint32)rv ;
 			*buffer += blockSize;
-			break;
+		}break;
 
-		case 4:
-			retValue = (uint32)((uint32 *)*buffer)[0];
+		case 4: {
+			auto rv = (uint32)((uint32*)*buffer)[0];
+			if (rv != 0xffffffff)			
+				retValue = (uint32)rv ;
 			*buffer += blockSize;
-			break;
+		}break;
 		}
-
+		retValue += offset;
 		return retValue;
 	}
 	int32 MMDImportHelper::MMDExtendBufferSizeToInt32(

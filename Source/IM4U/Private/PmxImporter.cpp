@@ -410,7 +410,7 @@ namespace MMD4UE4
 
 			// ボーン情報の取得
 			{
-				boneList[PmxBoneNum].Name = TEXT("Root");
+				boneList[PmxBoneNum].Name = modelNameJP;
 				boneList[PmxBoneNum].NameEng = "AllTopRootBone";
 				boneList[PmxBoneNum].Position = FVector3f(0);
 				boneList[PmxBoneNum].ParentBoneIndex = INDEX_NONE;
@@ -476,13 +476,13 @@ namespace MMD4UE4
 				else
 				{
 					boneList[i].LinkBoneIndex
-						= MMDExtendBufferSizeToUint32(&Buffer, this->baseHeader.BoneIndexSize);
+						= MMDExtendBufferSizeToUint32(&Buffer, this->baseHeader.BoneIndexSize, offsetBoneIndex) ;
 				}
 
 				if (boneList[i].Flag_AddRot == 1 || boneList[i].Flag_AddMov == 1)
 				{
 					boneList[i].AddParentBoneIndex
-						= MMDExtendBufferSizeToUint32(&Buffer, this->baseHeader.BoneIndexSize);
+						= MMDExtendBufferSizeToUint32(&Buffer, this->baseHeader.BoneIndexSize, offsetBoneIndex) ;
 					//
 					memcopySize = sizeof(boneList[i].AddRatio);
 					FMemory::Memcpy(&boneList[i].AddRatio, Buffer, memcopySize);
@@ -524,7 +524,7 @@ namespace MMD4UE4
 					PmxIKNum++;
 
 					boneList[i].IKInfo.TargetBoneIndex
-						= MMDExtendBufferSizeToUint32(&Buffer, this->baseHeader.BoneIndexSize) + offsetBoneIndex;
+						= MMDExtendBufferSizeToUint32(&Buffer, this->baseHeader.BoneIndexSize, offsetBoneIndex);
 					//
 					memcopySize = sizeof(boneList[i].IKInfo.LoopNum);
 					FMemory::Memcpy(&boneList[i].IKInfo.LoopNum, Buffer, memcopySize);
@@ -549,7 +549,7 @@ namespace MMD4UE4
 					for (int32 j = 0; j < boneList[i].IKInfo.LinkNum; j++)
 					{
 						boneList[i].IKInfo.Link[j].BoneIndex
-							= MMDExtendBufferSizeToUint32(&Buffer, this->baseHeader.BoneIndexSize) + offsetBoneIndex;
+							= MMDExtendBufferSizeToUint32(&Buffer, this->baseHeader.BoneIndexSize, offsetBoneIndex);
 						//
 						memcopySize = sizeof(boneList[i].IKInfo.Link[j].RotLockFlag);
 						FMemory::Memcpy(&boneList[i].IKInfo.Link[j].RotLockFlag, Buffer, memcopySize);
@@ -671,7 +671,7 @@ Buffer += memcopySize;
 					for (j = 0; j < morphList[i].DataNum; j++)
 					{
 						morphList[i].Bone[j].Index =
-							MMDExtendBufferSizeToUint32(&Buffer, this->baseHeader.BoneIndexSize) + offsetBoneIndex;
+							MMDExtendBufferSizeToUint32(&Buffer, this->baseHeader.BoneIndexSize, offsetBoneIndex);
 						//
 						memcopySize = sizeof(morphList[i].Bone[j].Offset);
 						FMemory::Memcpy(&morphList[i].Bone[j].Offset, Buffer, memcopySize);
@@ -810,7 +810,7 @@ Buffer += memcopySize;
 				
 				rb.NameEng = PMXTexBufferToFString(&Buffer, pmxEncodeType);
 
-				rb.BoneIndex = MMDExtendBufferSizeToUint32(&Buffer, this->baseHeader.BoneIndexSize)+ offsetBoneIndex;
+				rb.BoneIndex = MMDExtendBufferSizeToUint32(&Buffer, this->baseHeader.BoneIndexSize, offsetBoneIndex) ;
 				
 				auto bone=boneList[rb.BoneIndex]; rb.fnName = FName(bone.Name);
 				readBuffer(rb.group);

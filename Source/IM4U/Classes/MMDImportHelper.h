@@ -60,7 +60,7 @@ namespace MMD4UE4
 		//////////////////////////////////////
 		uint32 MMDExtendBufferSizeToUint32(
 			const uint8 ** buffer,
-			const uint8  blockSize
+			const uint8  blockSize, uint32 offset=0
 			);
 		/////////////////////////////////////
 		// import int
