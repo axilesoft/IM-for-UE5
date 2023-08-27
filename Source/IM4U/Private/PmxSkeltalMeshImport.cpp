@@ -261,139 +261,6 @@ bool UPmxFactory::ImportBone(
 	bool& bUseTime0AsRefPose
 )
 {
-#if 0
-	bOutDiffPose = false;
-	int32 SkelType = 0; // 0 for skeletal mesh, 1 for rigid mesh
-	FbxNode* Link = NULL;
-	FbxArray<FbxPose*> PoseArray;
-	TArray<FbxCluster*> ClusterArray;
-
-	if (NodeArray[0]->GetMesh()->GetDeformerCount(FbxDeformer::eSkin) == 0)
-	{
-		SkelType = 1;
-		Link = NodeArray[0];
-		RecursiveBuildSkeleton(GetRootSkeleton(Link), SortedLinks);
-	}
-	else
-	{
-		// get bindpose and clusters from FBX skeleton
-
-		// let's put the elements to their bind pose! (and we restore them after
-		// we have built the ClusterInformation.
-		int32 Default_NbPoses = SdkManager->GetBindPoseCount(Scene);
-		// If there are no BindPoses, the following will generate them.
-		//SdkManager->CreateMissingBindPoses(Scene);
-
-		//if we created missing bind poses, update the number of bind poses
-		int32 NbPoses = SdkManager->GetBindPoseCount(Scene);
-
-		if (NbPoses != Default_NbPoses)
-		{
-			AddTokenizedErrorMessage(FTokenizedMessage::Create(EMessageSeverity::Warning, LOCTEXT("FbxSkeletaLMeshimport_SceneMissingBinding", "The imported scene has no initial binding position (Bind Pose) for the skin. The plug-in will compute one automatically. However, it may create unexpected results.")), FFbxErrors::SkeletalMesh_NoBindPoseInScene);
-		}
-
-		//
-		// create the bones / skinning
-		//
-
-		for (int32 i = 0; i < NodeArray.Num(); i++)
-		{
-			FbxMesh* FbxMesh = NodeArray[i]->GetMesh();
-			const int32 SkinDeformerCount = FbxMesh->GetDeformerCount(FbxDeformer::eSkin);
-			for (int32 DeformerIndex = 0; DeformerIndex < SkinDeformerCount; DeformerIndex++)
-			{
-				FbxSkin* Skin = (FbxSkin*)FbxMesh->GetDeformer(DeformerIndex, FbxDeformer::eSkin);
-				for (int32 ClusterIndex = 0; ClusterIndex < Skin->GetClusterCount(); ClusterIndex++)
-				{
-					ClusterArray.Add(Skin->GetCluster(ClusterIndex));
-				}
-			}
-		}
-
-		if (ClusterArray.Num() == 0)
-		{
-			AddTokenizedErrorMessage(FTokenizedMessage::Create(EMessageSeverity::Warning, LOCTEXT("FbxSkeletaLMeshimport_NoAssociatedCluster", "No associated clusters")), FFbxErrors::SkeletalMesh_NoAssociatedCluster);
-			return false;
-		}
-
-		// get bind pose
-		if (RetrievePoseFromBindPose(NodeArray, PoseArray) == false)
-		{
-			UE_LOG(LogFbx, Warning, TEXT("Getting valid bind pose failed. Try to recreate bind pose"));
-			// if failed, delete bind pose, and retry.
-			const int32 PoseCount = Scene->GetPoseCount();
-			for (int32 PoseIndex = PoseCount - 1; PoseIndex >= 0; --PoseIndex)
-			{
-				FbxPose* CurrentPose = Scene->GetPose(PoseIndex);
-
-				// current pose is bind pose, 
-				if (CurrentPose && CurrentPose->IsBindPose())
-				{
-					Scene->RemovePose(PoseIndex);
-					CurrentPose->Destroy();
-				}
-			}
-
-			SdkManager->CreateMissingBindPoses(Scene);
-			if (RetrievePoseFromBindPose(NodeArray, PoseArray) == false)
-			{
-				UE_LOG(LogFbx, Warning, TEXT("Recreating bind pose failed."));
-			}
-			else
-			{
-				UE_LOG(LogFbx, Warning, TEXT("Recreating bind pose succeeded."));
-			}
-		}
-
-		// recurse through skeleton and build ordered table
-		BuildSkeletonSystem(ClusterArray, SortedLinks);
-	}
-
-	// error check
-	// if no bond is found
-	if (SortedLinks.Num() == 0)
-	{
-		AddTokenizedErrorMessage(FTokenizedMessage::Create(EMessageSeverity::Warning, FText::Format(LOCTEXT("FbxSkeletaLMeshimport_NoBone", "'{0}' has no bones"), FText::FromString(NodeArray[0]->GetName()))), FFbxErrors::SkeletalMesh_NoBoneFound);
-		return false;
-	}
-
-	// if no bind pose is found
-	if (!bUseTime0AsRefPose && PoseArray.GetCount() == 0)
-	{
-		// add to tokenized error message
-		AddTokenizedErrorMessage(FTokenizedMessage::Create(EMessageSeverity::Warning, LOCTEXT("FbxSkeletaLMeshimport_InvalidBindPose", "Could not find the bind pose.  It will use time 0 as bind pose.")), FFbxErrors::SkeletalMesh_InvalidBindPose);
-		bUseTime0AsRefPose = true;
-	}
-
-	int32 LinkIndex;
-
-	// Check for duplicate bone names and issue a warning if found
-	for (LinkIndex = 0; LinkIndex < SortedLinks.Num(); ++LinkIndex)
-	{
-		Link = SortedLinks[LinkIndex];
-
-		for (int32 AltLinkIndex = LinkIndex + 1; AltLinkIndex < SortedLinks.Num(); ++AltLinkIndex)
-		{
-			FbxNode* AltLink = SortedLinks[AltLinkIndex];
-
-			if (FCStringAnsi::Strcmp(Link->GetName(), AltLink->GetName()) == 0)
-			{
-				FString RawBoneName = ANSI_TO_TCHAR(Link->GetName());
-				AddTokenizedErrorMessage(FTokenizedMessage::Create(EMessageSeverity::Error, FText::Format(LOCTEXT("Error_DuplicateBoneName", "Error, Could not import {0}.\nDuplicate bone name found ('{1}'). Each bone must have a unique name."),
-					FText::FromString(NodeArray[0]->GetName()), FText::FromString(RawBoneName))), FFbxErrors::SkeletalMesh_DuplicateBones);
-				return false;
-			}
-		}
-	}
-
-	FbxArray<FbxAMatrix> GlobalsPerLink;
-	GlobalsPerLink.Grow(SortedLinks.Num());
-	GlobalsPerLink[0].SetIdentity();
-
-	FbxVector4 LocalLinkT;
-	FbxQuaternion LocalLinkQ;
-	FbxVector4	LocalLinkS;
-#endif
 	bool GlobalLinkFoundFlag;
 
 #if 1//test
@@ -449,91 +316,7 @@ bool UPmxFactory::ImportBone(
 		}
 
 		GlobalLinkFoundFlag = false;
-#if 0//Test2
-		if (!SkelType) //skeletal mesh
-		{
-			// there are some links, they have no cluster, but in bindpose
-			if (PoseArray.GetCount())
-			{
-				for (int32 PoseIndex = 0; PoseIndex < PoseArray.GetCount(); PoseIndex++)
-				{
-					int32 PoseLinkIndex = PoseArray[PoseIndex]->Find(Link);
-					if (PoseLinkIndex >= 0)
-					{
-						FbxMatrix NoneAffineMatrix = PoseArray[PoseIndex]->GetMatrix(PoseLinkIndex);
-						FbxAMatrix Matrix = *(FbxAMatrix*)(double*)&NoneAffineMatrix;
-						GlobalsPerLink[LinkIndex] = Matrix;
-						GlobalLinkFoundFlag = true;
-						break;
-					}
-				}
-			}
 
-			if (!GlobalLinkFoundFlag)
-			{
-				// since now we set use time 0 as ref pose this won't unlikely happen
-				// but leaving it just in case it still has case where it's missing partial bind pose
-				if (!bUseTime0AsRefPose && !bDisableMissingBindPoseWarning)
-				{
-					bAnyLinksNotInBindPose = true;
-					LinksWithoutBindPoses += ANSI_TO_TCHAR(Link->GetName());
-					LinksWithoutBindPoses += TEXT("  \n");
-				}
-
-				for (int32 ClusterIndex = 0; ClusterIndex < ClusterArray.Num(); ClusterIndex++)
-				{
-					FbxCluster* Cluster = ClusterArray[ClusterIndex];
-					if (Link == Cluster->GetLink())
-					{
-						Cluster->GetTransformLinkMatrix(GlobalsPerLink[LinkIndex]);
-						GlobalLinkFoundFlag = true;
-						break;
-					}
-				}
-			}
-		}
-
-		if (!GlobalLinkFoundFlag)
-		{
-			GlobalsPerLink[LinkIndex] = Link->EvaluateGlobalTransform();
-		}
-
-		if (bUseTime0AsRefPose)
-		{
-			FbxAMatrix& T0Matrix = Scene->GetAnimationEvaluator()->GetNodeGlobalTransform(Link, 0);
-			if (GlobalsPerLink[LinkIndex] != T0Matrix)
-			{
-				bOutDiffPose = true;
-			}
-
-			GlobalsPerLink[LinkIndex] = T0Matrix;
-		}
-
-		if (LinkIndex)
-		{
-			FbxAMatrix	Matrix;
-			Matrix = GlobalsPerLink[ParentIndex].Inverse() * GlobalsPerLink[LinkIndex];
-			LocalLinkT = Matrix.GetT();
-			LocalLinkQ = Matrix.GetQ();
-			LocalLinkS = Matrix.GetS();
-		}
-		else	// skeleton root
-		{
-			// for root, this is global coordinate
-			LocalLinkT = GlobalsPerLink[LinkIndex].GetT();
-			LocalLinkQ = GlobalsPerLink[LinkIndex].GetQ();
-			LocalLinkS = GlobalsPerLink[LinkIndex].GetS();
-		}
-#else //TsetDebug
-		{
-			// for root, this is global coordinate
-			/*LocalLinkT = GlobalsPerLink[LinkIndex].GetT();
-			LocalLinkQ = GlobalsPerLink[LinkIndex].GetQ();
-			LocalLinkS = GlobalsPerLink[LinkIndex].GetS();*/
-		}
-#endif
-
-		//ImportData.RefBonesBinary.AddZeroed();
 		// set bone
 		SkeletalMeshImportData::FBone& Bone = ImportData.RefBonesBinary[LinkIndex];
 		FString BoneName;
@@ -549,37 +332,19 @@ bool UPmxFactory::ImportBone(
 #endif
 		Bone.Name = BoneName;
 
-		SkeletalMeshImportData::FJointPos& JointMatrix = Bone.BonePos;
-#if 0//Test2
-		FbxSkeleton* Skeleton = Link->GetSkeleton();
-		if (Skeleton)
+		SkeletalMeshImportData::FJointPos& bonePos = Bone.BonePos;
+
 		{
-			JointMatrix.Length = Converter.ConvertDist(Skeleton->LimbLength.Get());
-			JointMatrix.XSize = Converter.ConvertDist(Skeleton->Size.Get());
-			JointMatrix.YSize = Converter.ConvertDist(Skeleton->Size.Get());
-			JointMatrix.ZSize = Converter.ConvertDist(Skeleton->Size.Get());
-		}
-		else
-#endif
-		{
-			JointMatrix.Length = 1.;
-			JointMatrix.XSize = 100.;
-			JointMatrix.YSize = 100.;
-			JointMatrix.ZSize = 100.;
+			bonePos.Length = 1.;
+			bonePos.XSize = 100.;
+			bonePos.YSize = 100.;
+			bonePos.ZSize = 100.;
 		}
 
 		// get the link parent and children
 		Bone.ParentIndex = ParentIndex;
 		Bone.NumChildren = 0;
-		/*
-		for (int32 ChildIndex = 0; ChildIndex<Link->GetChildCount(); ChildIndex++)
-		{
-			FbxNode* Child = Link->GetChild(ChildIndex);
-			if (IsUnrealBone(Child))
-			{
-				Bone.NumChildren++;
-			}
-		}*/
+
 		//For MMD
 		FQuat4f  ftr = FQuat4f(0, 0, 0, 1.0); int childIdx = -1;
 		for (int32 ChildIndex = 0; ChildIndex < PmxMeshInfo->boneList.Num(); ChildIndex++)
@@ -590,11 +355,7 @@ bool UPmxFactory::ImportBone(
 				childIdx = ChildIndex;
 			}
 		}
-		/*
-		JointMatrix.Transform.SetTranslation(Converter.ConvertPos(LocalLinkT));
-		JointMatrix.Transform.SetRotation(Converter.ConvertRotToQuat(LocalLinkQ));
-		JointMatrix.Transform.SetScale3D(Converter.ConvertScale(LocalLinkS));
-		*/
+
 		//test MMD , not rot asix and LocalAsix
 		FVector3f TransTemp = PmxMeshInfo->boneList[LinkIndex].Position;
 		bool hasParent = ParentIndex != INDEX_NONE;
@@ -605,48 +366,26 @@ bool UPmxFactory::ImportBone(
 				PmxMeshInfo->boneList[LinkIndex].Position
 			)
 				- it.TransformPosition(PmxMeshInfo->boneList[ParentIndex].Position)
-
 				;
 			//TransTemp *= -1;
 
 		}
 
-#if 0
-		if (childIdx > 0)
-		{
-			if (hasParent) {
-				FTransform it = PmxMeshInfo->boneList[ParentIndex].absTF.Inverse();
-				FVector fv = it.TransformPosition(
-					PmxMeshInfo->boneList[childIdx].Position
-				) - it.TransformPosition(
-					PmxMeshInfo->boneList[LinkIndex].Position
-				);
-				ftr = fv.ToOrientationQuat() * FRotator(90, 0, 0).Quaternion();
-			}
-			//TransTemp = FRotationMatrix(ftr.Rotator()).InverseTransformVector(TransTemp);
-		}
-#elif 0
-		if (hasParent)
-		{
-			FVector fv = TransTemp;
-			ftr = fv.ToOrientationQuat();// *FRotator(0, 90, 0).Quaternion();
-		}
-#else
 		ftr = FRotator3f(0, 0, 0).Quaternion();
-#endif
-		//TransTemp *= 10;
-		FTransform3f ft; ft.SetRotation(ftr);
-		FVector3f fv1 = ft.TransformPosition(TransTemp);
-		FTransform3f ft2 = ft.Inverse();
-		FVector3f fv2 = ft2.TransformPosition(TransTemp);
-		//if (BoneName.Contains(L"L"))
-		//	UE_LOG(LogMMD4UE4_PMXFactory, Warning, TEXT("%s,%d  fv0:%f,%f,%f   fv1:%f,%f,%f   fv2:%f,%f,%f"), *BoneName, hasParent, TransTemp.X, TransTemp.Y, TransTemp.Z, fv1.X, fv1.Y, fv1.Z, fv2.X, fv2.Y, fv2.Z);
-		JointMatrix.Transform.SetTranslation(TransTemp);
-		JointMatrix.Transform.SetRotation(ftr);// (FQuat(0, 0, 0, 1.0));
-		JointMatrix.Transform.SetScale3D(FVector3f(1));
+
+		////TransTemp *= 10;
+		//FTransform3f ft; ft.SetRotation(ftr);
+		//FVector3f fv1 = ft.TransformPosition(TransTemp);
+		//FTransform3f ft2 = ft.Inverse();
+		//FVector3f fv2 = ft2.TransformPosition(TransTemp);
+		////if (BoneName.Contains(L"L"))
+		////	UE_LOG(LogMMD4UE4_PMXFactory, Warning, TEXT("%s,%d  fv0:%f,%f,%f   fv1:%f,%f,%f   fv2:%f,%f,%f"), *BoneName, hasParent, TransTemp.X, TransTemp.Y, TransTemp.Z, fv1.X, fv1.Y, fv1.Z, fv2.X, fv2.Y, fv2.Z);
+		bonePos.Transform.SetTranslation(TransTemp);
+		bonePos.Transform.SetRotation(ftr);// (FQuat(0, 0, 0, 1.0));
+		bonePos.Transform.SetScale3D(FVector3f(1));
 		if (hasParent)
-			PmxMeshInfo->boneList[LinkIndex].absTF = PmxMeshInfo->boneList[ParentIndex].absTF * JointMatrix.Transform;
-		else 			PmxMeshInfo->boneList[LinkIndex].absTF = JointMatrix.Transform;
+			PmxMeshInfo->boneList[LinkIndex].absTF = PmxMeshInfo->boneList[ParentIndex].absTF * bonePos.Transform;
+		else 			PmxMeshInfo->boneList[LinkIndex].absTF = bonePos.Transform;
 
 	}
 	/*

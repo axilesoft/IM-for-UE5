@@ -426,7 +426,8 @@ namespace MMD4UE4
 
 			// ボーン情報の取得
 			uint32 PmxIKNum = 0;
-			for (uint32 i = 1; i < PmxBoneNum + offsetBoneIndex; i++)
+			uint32 i;
+			for ( i = 1; i < PmxBoneNum + offsetBoneIndex; i++)
 			{
 
 				boneList[i].Name
@@ -596,6 +597,20 @@ namespace MMD4UE4
 					}
 				}
 			}
+			//{				
+			//	
+			//	if (auto bh = boneList.FindByPredicate([&](const PMX_BONE &Value) {
+			//		return  Value.Name == L"頭";
+			//		})) {
+			//		boneList.AddZeroed(1);
+			//		boneList[i] = *bh;
+			//		boneList[i].Name = L"頭Target";
+			//		boneList[i].NameEng = "HeadTarget";
+			//		boneList[i].Position.Y += 20;
+			//		boneList[i].ParentBoneIndex = bh-&boneList[0];
+			//		i++;
+			//	}
+			//}
 			UE_LOG(LogMMD4UE4_PmxMeshInfo, Warning, TEXT("PMX Import [BoneList] Complete"));
 		}
 		{

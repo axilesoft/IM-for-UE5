@@ -1044,17 +1044,30 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 							else {
 								auto c1 = NewPhysicsAsset->SkeletalBodySetups[i]->BoneName.ToString()[0];
 								auto c2 = NewPhysicsAsset->SkeletalBodySetups[j]->BoneName.ToString()[0];
-								if ( c1 == L'左' && c2 == L'右' || c1 == L'右' && c2 == L'左'	)
+								if (c1 == L'左' && c2 == L'右' || c1 == L'右' && c2 == L'左') {
+									if (NewPhysicsAsset->SkeletalBodySetups[i]->BoneName !=  L"右足D"
+										&&
+										NewPhysicsAsset->SkeletalBodySetups[j]->BoneName != L"右足D")
 									NewPhysicsAsset->EnableCollision(j, i);
+									
+								}
 							}
 						}
+
+
 							//else						NewPhysicsAsset->DisableCollision(j, i);
 #endif
 					//NewPhysicsAsset->ConstraintSetup.Empty();
 
 #if 1
 					int csn=NewPhysicsAsset->ConstraintSetup.Num();
+					{
+						int idb = NewPhysicsAsset->FindBodyIndex(L"右胸上2");
+						if (idb != INDEX_NONE) NewPhysicsAsset->SkeletalBodySetups[idb]->DefaultInstance.MassScale = 10.f;
+						idb = NewPhysicsAsset->FindBodyIndex(L"左胸上2");
+						if (idb != INDEX_NONE) NewPhysicsAsset->SkeletalBodySetups[idb]->DefaultInstance.MassScale = 10.f;
 
+					}
 
 					for (int i = 0; i < csn; i++)
 					{
@@ -1103,6 +1116,24 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 								cs.SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Limited, (5));
 								cs.SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Limited, (5) );
 								cs.SetAngularTwistLimit(EAngularConstraintMotion::ACM_Limited, (60));
+							}
+							else if (cs.ConstraintBone1 == L"右胸上2" || cs.ConstraintBone1 == L"左胸上2")
+							{
+								cs.ProfileInstance.LinearLimit.XMotion = ELinearConstraintMotion::LCM_Limited;
+								cs.ProfileInstance.LinearLimit.YMotion = ELinearConstraintMotion::LCM_Locked;
+								cs.ProfileInstance.LinearLimit.ZMotion = ELinearConstraintMotion::LCM_Limited;
+								cs.ProfileInstance.LinearLimit.Limit = 5.f;
+
+								cs.ProfileInstance.LinearDrive.PositionTarget = FVector(0, 0, 0);
+								//cs.ProfileInstance.LinearDrive.XDrive.bEnablePositionDrive = true;
+								//cs.ProfileInstance.LinearDrive.ZDrive.bEnablePositionDrive = true;
+								cs.SetLinearPositionDrive(true, false, true);
+								cs.SetLinearDriveParams(2500.f, 1.f, 0.f);
+								//cs.ProfileInstance.LinearDrive.XDrive.Stiffness = 2500;
+								//cs.ProfileInstance.LinearDrive.YDrive.Stiffness = 2500;
+								//cs.ProfileInstance.LinearDrive.ZDrive.Stiffness = 2500;
+								
+								cs.ProfileInstance.LinearDrive.bEnablePositionDrive = true;
 							}
 							//else if (jt)
 							//{

@@ -17,7 +17,7 @@
 #include "Factory/VmdImportOption.h"
 
 #define LOCTEXT_NAMESPACE "VMDImportFactory"
-
+#define USE_RM 0
 
 DEFINE_LOG_CATEGORY(LogMMD4UE4_VMDFactory)
 
@@ -748,7 +748,7 @@ bool UVmdFactory::ImportMorphCurveToAnimSequence(
 			Skeleton->Modify();
 		}
 
-#if 1
+#if 0
 
 		FSmartName NewName;
 		Skeleton->AddSmartNameAndModify(USkeleton::AnimCurveMappingName, Name, NewName);
@@ -813,8 +813,45 @@ bool UVmdFactory::ImportMorphCurveToAnimSequence(
 		/***********************************************************************************/
 
 #else
+		if (vmdFaceTrackPtr->keyList.Num() > 1) {
+			FSmartName NewName;
+			Skeleton->AddSmartNameAndModify(USkeleton::AnimCurveMappingName, Name, NewName);
 
+			FAnimationCurveIdentifier CurveId(NewName, ERawCurveTrackTypes::RCT_Float);
+			adc.AddCurve(CurveId);
 
+			const FFloatCurve* NewCurve = DestSeq->GetDataModel()->FindFloatCurve(CurveId);
+			ensure(NewCurve);
+			MMD4UE4::VMD_FACE_KEY* faceKeyPtr = NULL;
+			FRichCurve RichCurve;
+			for (int s = 0; s < vmdFaceTrackPtr->keyList.Num(); ++s)
+			{
+				check(vmdFaceTrackPtr->sortIndexList[s] < vmdFaceTrackPtr->keyList.Num());
+				faceKeyPtr = &vmdFaceTrackPtr->keyList[vmdFaceTrackPtr->sortIndexList[s]];
+				check(faceKeyPtr);
+				/********************************************/
+				float timeCurve = faceKeyPtr->Frame / 30.0f;
+				if (timeCurve > DestSeq->GetPlayLength())
+				{
+					//this key frame(time) more than Target SeqLength ... 
+					break;
+				}
+
+				const float CurveValue = faceKeyPtr->Factor;
+				const float TimeValue = timeCurve;
+
+				FKeyHandle NewKeyHandle = RichCurve.AddKey(TimeValue, CurveValue, false);
+
+				ERichCurveInterpMode NewInterpMode = RCIM_Linear;
+				ERichCurveTangentMode NewTangentMode = RCTM_Auto;
+				ERichCurveTangentWeightMode NewTangentWeightMode = RCTWM_WeightedNone;
+
+				RichCurve.SetKeyInterpMode(NewKeyHandle, NewInterpMode);
+				RichCurve.SetKeyTangentMode(NewKeyHandle, NewTangentMode);
+				RichCurve.SetKeyTangentWeightMode(NewKeyHandle, NewTangentWeightMode);
+			}
+			adc.SetCurveKeys(CurveId, RichCurve.GetConstRefOfKeys());
+		}
 #endif
 	}
 
@@ -894,6 +931,7 @@ bool UVmdFactory::ImportVMDToAnimSequence(
 
 
 	check(RefBonePose.Num() == NumBones);
+	int mmdRoot = 0, mmdCenter=0;
 	// SkeletonとのBone関係を登録する＠必須事項
 	for (int32 BoneIndex = 0; BoneIndex < NumBones; ++BoneIndex)
 	{
@@ -912,6 +950,14 @@ bool UVmdFactory::ImportVMDToAnimSequence(
 		FName* pn = NameMap.Find(targetName);
 		if (pn)
 			targetName = *pn;
+		if (!mmdRoot) {
+			if (targetName == TEXT("全ての親"))
+				mmdRoot = BoneIndex;
+		} else if (!mmdCenter) {
+			if (targetName == TEXT("センター"))
+				mmdCenter = BoneIndex;
+		}
+		
 
 		if (ReNameTable)
 		{
@@ -962,9 +1008,9 @@ bool UVmdFactory::ImportVMDToAnimSequence(
 					*targetName.ToString(),
 					kybone.sortIndexList.Num() );
 			}
-			bool dbg = false;
-			if (targetName == L"右ひじ")
-				dbg = true;
+			//bool dbg = false;
+			//if (targetName == L"右ひじ")
+			//	dbg = true;
 			//事前に各Trackに対し親Bone抜きにLocal座標で全登録予定のフレーム計算しておく（もっと良い処理があれば…検討）
 			//90度以上の軸回転が入るとクォータニオンの為か処理に誤りがあるかで余計な回転が入ってしまう。
 			//→上記により、単にZ回転（ターンモーション）で下半身と上半身の軸が物理的にありえない回転の組み合わせになる。バグ。
@@ -1238,6 +1284,8 @@ bool UVmdFactory::ImportVMDToAnimSequence(
 				}
 			}
 		}
+
+		
 	}
 
 #if 0
@@ -1886,29 +1934,73 @@ bool UVmdFactory::ImportVMDToAnimSequence(
 #endif /* :UE414: 4.14のAnimationクラス仕様変更による機能制限 */
 
 	/* AddTrack */
-	for (int32 BoneIndex = 0; BoneIndex < NumBones; ++BoneIndex)
-	{
-		FName BoneName = Skeleton->GetReferenceSkeleton().GetBoneName(BoneIndex);
-
-		FRawAnimSequenceTrack &RawTrack = TempRawTrackList[BoneIndex];
-
-		//DestSeq->AddNewRawTrack(BoneName, &RawTrack);
-
-		int32 NewTrackIndex = INDEX_NONE;
-		if (RawTrack.PosKeys.Num()>1)
+	if (!USE_RM || mmdCenter == 0) {
+		for (int32 BoneIndex = 0; BoneIndex < NumBones; ++BoneIndex)
 		{
-	
-			if (adc.AddBoneCurve(BoneName))
+			FName BoneName = Skeleton->GetReferenceSkeleton().GetBoneName(BoneIndex);
+
+			FRawAnimSequenceTrack& RawTrack = TempRawTrackList[BoneIndex];
+
+			//DestSeq->AddNewRawTrack(BoneName, &RawTrack);
+
 			{
-				adc.SetBoneTrackKeys(BoneName, RawTrack.PosKeys, RawTrack.RotKeys, RawTrack.ScaleKeys);
+				if (RawTrack.PosKeys.Num() > 1)
+				{
+
+					if (adc.AddBoneCurve(BoneName))
+					{
+						adc.SetBoneTrackKeys(BoneName, RawTrack.PosKeys, RawTrack.RotKeys, RawTrack.ScaleKeys);
+					}
+				}
 			}
 		}
-
-
 	}
+	else {
 
+		auto& rootTrack = TempRawTrackList[mmdRoot];
+		auto& cetrTrack = TempRawTrackList[mmdCenter];
+
+		if (rootTrack.PosKeys.Num() < cetrTrack.PosKeys.Num()) {
+			auto pos = rootTrack.PosKeys.Last();
+			auto rot = rootTrack.RotKeys.Last();
+			auto scl = rootTrack.ScaleKeys.Last();
+			int n = cetrTrack.PosKeys.Num() - rootTrack.PosKeys.Num();
+			for (int i = 0; i < n; i++) {
+				rootTrack.PosKeys.Add(pos);
+				rootTrack.RotKeys.Add(rot);
+				rootTrack.ScaleKeys.Add(scl);
+			}
+		}
+		
+		TempRawTrackList[0] = TempRawTrackList[mmdRoot];
+		for (int32 BoneIndex = 0; BoneIndex < NumBones; ++BoneIndex)
+		{
+			FName BoneName = Skeleton->GetReferenceSkeleton().GetBoneName(BoneIndex);
+
+			FRawAnimSequenceTrack& RawTrack = TempRawTrackList[BoneIndex];
+
+			{
+				if (BoneIndex == 0) {
+					for (int i = 0; i < RawTrack.PosKeys.Num(); i++) {
+						RawTrack.PosKeys[i].X += cetrTrack.PosKeys[i].X; cetrTrack.PosKeys[i].X = 0;
+						RawTrack.PosKeys[i].Y += cetrTrack.PosKeys[i].Y; cetrTrack.PosKeys[i].Y = 0;
+					}
+				}
+				
+				if (RawTrack.PosKeys.Num() > 1 && BoneIndex!=mmdRoot)
+				{
+
+					if (adc.AddBoneCurve(BoneName))
+					{
+						adc.SetBoneTrackKeys(BoneName, RawTrack.PosKeys, RawTrack.RotKeys, RawTrack.ScaleKeys);
+					}
+				}
+			}
+		}
+	}
 	adc.NotifyPopulated();
 	adc.CloseBracket();
+	
 	//GWarn->EndSlowTask();
 	return true;
 }
