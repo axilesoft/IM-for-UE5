@@ -1132,8 +1132,12 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 								//cs.ProfileInstance.LinearDrive.XDrive.Stiffness = 2500;
 								//cs.ProfileInstance.LinearDrive.YDrive.Stiffness = 2500;
 								//cs.ProfileInstance.LinearDrive.ZDrive.Stiffness = 2500;
-								
-								cs.ProfileInstance.LinearDrive.bEnablePositionDrive = true;
+
+								//This caused err for some reason.
+								//cs.ProfileInstance.LinearDrive.bEnablePositionDrive = true;
+								cs.ProfileInstance.LinearDrive.XDrive.bEnablePositionDrive = true;
+								cs.ProfileInstance.LinearDrive.YDrive.bEnablePositionDrive = true;
+								cs.ProfileInstance.LinearDrive.ZDrive.bEnablePositionDrive = true;
 							}
 							//else if (jt)
 							//{
