@@ -23,5 +23,16 @@
 				"Engine"
 			]
 		}
+	],
+	"Plugins":
+	[
+		{
+			"Name": "LevelSequenceEditor",
+			"Enabled": true
+		},
+		{
+			"Name" : "ControlRig",
+			"Enabled": true
+		}
 	]
 }
