@@ -66,8 +66,8 @@ namespace UnrealBuildTool.Rules
 
             /*PublicIncludePaths.AddRange(
                 new string[] {
-					// ... add public include paths required here ...
-					"ControlRig/Public",
+                    // ... add public include paths required here ...
+                    "ControlRig/Public",
                     "ControlRigDeveloper/Public",
                     "ControlRigEditor/Public"
                 }
@@ -84,8 +84,6 @@ namespace UnrealBuildTool.Rules
 			PublicDependencyModuleNames.AddRange(
 				new string[]
 				{
-
-
 					"Core",
 					"CoreUObject",
 					"Engine", 
