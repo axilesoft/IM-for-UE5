@@ -64,14 +64,14 @@ namespace UnrealBuildTool.Rules
 
 			string LibGLMPath = Path.Combine(ThirdPartyPath, "glm");
 
-            PublicIncludePaths.AddRange(
+            /*PublicIncludePaths.AddRange(
                 new string[] {
 					// ... add public include paths required here ...
 					"ControlRig/Public",
                     "ControlRigDeveloper/Public",
                     "ControlRigEditor/Public"
                 }
-				);
+				);*/
 
 			PrivateIncludePaths.AddRange(
                 new string[] {
@@ -98,14 +98,15 @@ namespace UnrealBuildTool.Rules
 					"MessageLog",
 					"MainFrame",
 					"PropertyEditor",
-                    "RHI",
-                    "RenderCore",
-                    "ContentBrowser",
+					"RHI",
+					"RenderCore",
+					"ContentBrowser",
 					"AnimationDataController",
-
-                    "PhysicsUtilities","SkeletalMeshUtilitiesCommon",
-                    "ControlRig",
-                    "ControlRigEditor","ControlRigDeveloper",
+					"PhysicsUtilities",
+					"SkeletalMeshUtilitiesCommon",
+					"ControlRig",
+					"ControlRigEditor",
+					"ControlRigDeveloper"
 					// ... add other public dependencies that you statically link with here ...
 				}
 				);
