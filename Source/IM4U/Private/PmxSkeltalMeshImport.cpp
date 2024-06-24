@@ -35,6 +35,7 @@
 
 #include "Animation/MorphTarget.h"
 #include "ComponentReregisterContext.h"
+#include "Misc/EngineVersionComparison.h"
 ////////////
 
 #include "PmxFactory.h"
@@ -1182,7 +1183,11 @@ void UPmxFactory::ImportMorphTargetsInternal(
 	if (BaseSkelMesh->GetImportedModel() && BaseSkelMesh->GetImportedModel()->LODModels.IsValidIndex(LODIndex))
 	{
 		//If we can build the skeletal mesh there is no need to build the morph target now, all the necessary build morph target data was copied before.
+#if UE_VERSION_OLDER_THAN(5,4,0)
 		if (!BaseSkelMesh->IsLODImportedDataBuildAvailable(LODIndex))
+#else
+		if (!BaseSkelMesh->HasMeshDescription(LODIndex))
+#endif
 		{
 			FOverlappingThresholds hd;
 			//Build MorphTargets
@@ -1450,7 +1455,11 @@ void UPmxFactory::ImportFbxMorphTarget(
 			Filename,
 			LODIndex, ImportData
 		);
+#if UE_VERSION_OLDER_THAN(5,4,0)
 		BaseSkelMesh->SaveLODImportedData(LODIndex,ImportData);
+#else
+		BaseSkelMesh->CommitMeshDescription(LODIndex);
+#endif
 	}
 }
 
