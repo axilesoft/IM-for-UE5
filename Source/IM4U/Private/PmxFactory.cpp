@@ -51,6 +51,7 @@
 
 #include "Components/SkeletalMeshComponent.h"
 #include "Rendering/SkeletalMeshModel.h"
+#include "Misc/EngineVersionComparison.h"
 
 
 
@@ -540,7 +541,11 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 	if (true /*!FbxShapeArray*/)
 	{
 		//UObject* ExistingObject = StaticFindObjectFast(UObject::StaticClass(), InParent, *Name.ToString(), false, false, RF_PendingKill);//~UE4.10
+		#if UE_VERSION_OLDER_THAN(5,2,0)
 		UObject* ExistingObject = StaticFindObjectFast(UObject::StaticClass(), InParent, *Name.ToString(), false, false, EObjectFlags::RF_NoFlags, EInternalObjectFlags::Garbage);//UE4.11~
+#else
+		UObject* ExistingObject = StaticFindObjectFast(UObject::StaticClass(), InParent, *Name.ToString(), false, EObjectFlags::RF_NoFlags, EInternalObjectFlags::Garbage);
+#endif
 		USkeletalMesh* ExistingSkelMesh = Cast<USkeletalMesh>(ExistingObject);
 
 		if (ExistingSkelMesh)
@@ -563,7 +568,11 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 	bool isSK_ = false;
 	if (0 /*!FbxShapeArray*/)
 	{
+		#if UE_VERSION_OLDER_THAN(5,2,0)
 		UObject* ExistingObject = StaticFindObjectFast(UObject::StaticClass(), InParent, *(L"SK_" + Name.ToString()), false, false, EObjectFlags::RF_NoFlags, EInternalObjectFlags::Garbage);//UE4.11~
+#else
+		UObject* ExistingObject = StaticFindObjectFast(UObject::StaticClass(), InParent, *(L"SK_" + Name.ToString()), false, EObjectFlags::RF_NoFlags, EInternalObjectFlags::Garbage);
+#endif
 		USkeletalMesh* ExistingSkelMesh = Cast<USkeletalMesh>(ExistingObject);
 
 		if (ExistingSkelMesh)
@@ -750,11 +759,19 @@ USkeletalMesh* UPmxFactory::ImportSkeletalMesh(
 		const int32 ImportLODModelIndex = 0;
 		FSkeletalMeshLODModel& LODModel = ImportedResource->LODModels[ImportLODModelIndex];
 
+#if UE_VERSION_OLDER_THAN(5,4,0)
 		SkeletalMesh->SaveLODImportedData(0, *SkelMeshImportDataPtr);
+#else
+		SkeletalMesh->CommitMeshDescription(0);
+#endif
 
 		{
 			//We reimport both
+#if UE_VERSION_OLDER_THAN(5,4,0)
 			SkeletalMesh->SetLODImportedDataVersions(ImportLODModelIndex, ESkeletalMeshGeoImportVersions::LatestVersion, ESkeletalMeshSkinningImportVersions::LatestVersion);
+#else
+
+#endif
 		}
 		SkeletalMesh->ResetLODInfo();
 		FSkeletalMeshLODInfo& NewLODInfo = SkeletalMesh->AddLODInfo();
