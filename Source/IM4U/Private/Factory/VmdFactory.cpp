@@ -12,6 +12,7 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 
 #include "VmdImportUI.h"
+#include "Misc/EngineVersionComparison.h"
 
 
 #include "Factory/VmdImportOption.h"
@@ -24,9 +25,6 @@ DEFINE_LOG_CATEGORY(LogMMD4UE4_VMDFactory)
 static TMap<FName, FName> NameMap;
 #define ADD_NAME_MAP( x , y ) NameMap.Add((y),(x))
 void initMmdNameMap() {
-
-
-#if 0
 	if (NameMap.Num() == 0)
 	{
 		ADD_NAME_MAP(L"操作中心", L"op_center");
@@ -96,8 +94,20 @@ void initMmdNameMap() {
 		ADD_NAME_MAP(L"左つま先ＩＫ", L"ikToeL");
 		ADD_NAME_MAP(L"右つま先ＩＫ", L"ikToeR");
 
+		ADD_NAME_MAP(L"左足", L"左足D");
+		ADD_NAME_MAP(L"左ひざ", L"左ひざD");
+		ADD_NAME_MAP(L"左足首", L"左足首D");
+		ADD_NAME_MAP(L"左つま先", L"左足先EX");
+		ADD_NAME_MAP(L"右足", L"右足D");
+		ADD_NAME_MAP(L"右ひざ", L"右ひざD");
+		ADD_NAME_MAP(L"右足首", L"右足首D");
+		ADD_NAME_MAP(L"右つま先", L"右足先EX");
+		//ADD_NAME_MAP(L"センター", L"腰");
+		ADD_NAME_MAP(L"腰キャンセル右", L"右腰キャンセル");
+		ADD_NAME_MAP(L"腰キャンセル左", L"左腰キャンセル");
+
 	}
-#endif
+
 }
 /////////////////////////////////////////////////////////
 //prototype ::from dxlib 
@@ -199,7 +209,11 @@ UObject* UVmdFactory::FactoryCreateBinary
 注意：新規Asset生成はIKなど未対応の為非推奨。追加Morphのみ対応。"
 			)
 			);
+#if UE_VERSION_OLDER_THAN(5,4,0)	
 		FMessageDialog::Open(EAppMsgType::Ok, MessageDbg, &TitleStr);
+#else
+		FMessageDialog::Open(EAppMsgType::Ok, MessageDbg);
+#endif	
 	}
 	/***************************************
 	* VMD取り込み時の警告表示
@@ -221,7 +235,11 @@ InportOption画面にて指定することで取り込むことが可能です�
 			)
 			, FText::FromString(vmdMotionInfo.ModelName)
 			);
+#if UE_VERSION_OLDER_THAN(5,4,0)
 		FMessageDialog::Open(EAppMsgType::Ok, MessageDbg, &TitleStr);
+#else
+		FMessageDialog::Open(EAppMsgType::Ok, MessageDbg);
+#endif	
 	}
 	/////////////////////////////////////
 	// factory animation asset from vmd data.
@@ -285,7 +303,11 @@ Retry ImportOption!"
 						)
 							, FText::FromString(vmdMotionInfo.ModelName)
 						);
+#if UE_VERSION_OLDER_THAN(5,4,0)
 					FMessageDialog::Open(EAppMsgType::Ok, MessageDbg, &TitleStr);
+#else
+					FMessageDialog::Open(EAppMsgType::Ok, MessageDbg);
+#endif	
 				}
 				/* もう一回させる*/
 				ImportOptions
@@ -535,7 +557,11 @@ UAnimSequence * UVmdFactory::ImportAnimations(
 			//Controller.SetPlayLength(AbcFile->GetImportLength());
 			//Controller.SetFrameRate(FFrameRate(AbcFile->GetFramerate(), 1));
 
+#if UE_VERSION_OLDER_THAN(5,4,0)
 			adc.UpdateCurveNamesFromSkeleton(Skeleton, ERawCurveTrackTypes::RCT_Float);
+#else
+			adc.UpdateAttributesFromSkeleton(Skeleton);
+#endif
 			adc.NotifyPopulated();
 
 			adc.CloseBracket();
@@ -649,7 +675,11 @@ UAnimSequence * UVmdFactory::AddtionalMorphCurveImportToAnimations(
 			//Controller.SetPlayLength(AbcFile->GetImportLength());
 			//Controller.SetFrameRate(FFrameRate(AbcFile->GetFramerate(), 1));
 
+#if UE_VERSION_OLDER_THAN(5,4,0)
 			adc.UpdateCurveNamesFromSkeleton(Skeleton, ERawCurveTrackTypes::RCT_Float);
+#else
+			adc.UpdateAttributesFromSkeleton(Skeleton);
+#endif
 			adc.NotifyPopulated();
 
 			adc.CloseBracket();
@@ -715,7 +745,7 @@ bool UVmdFactory::ImportMorphCurveToAnimSequence(
 		/********************************************/
 		//original
 		FName Name = *vmdFaceTrackPtr->TrackName;
-
+/*
 #if 0	/* under ~UE4.10*/
 		FSmartNameMapping* NameMapping 
 			//= Skeleton->SmartNames.GetContainer(USkeleton::AnimCurveMappingName); 
@@ -724,6 +754,7 @@ bool UVmdFactory::ImportMorphCurveToAnimSequence(
 			//= const_cast<FSmartNameMapping*>(Skeleton->GetSmartNameContainer(USkeleton::AnimCurveMappingName));//UE4.11~
 			= Skeleton->GetSmartNameContainer(USkeleton::AnimCurveMappingName);//UE4.11~
 #endif
+*/
 		/**********************************/
 		//self
 		if (mesh != NULL)
@@ -741,12 +772,15 @@ bool UVmdFactory::ImportMorphCurveToAnimSequence(
 			}
 		}
 		/*********************************/
+/*
 		// Add or retrieve curve
-		if (!NameMapping->Exists(Name))
+		//if (!NameMapping->Exists(Name))
+		if (!NameMapping->Exists_NoLock(Name))
 		{
 			// mark skeleton dirty
 			Skeleton->Modify();
 		}
+  */
 
 #if 0
 
@@ -814,10 +848,15 @@ bool UVmdFactory::ImportMorphCurveToAnimSequence(
 
 #else
 		if (vmdFaceTrackPtr->keyList.Num() > 1) {
-			FSmartName NewName;
+			//FSmartName NewName;
+#if UE_VERSION_OLDER_THAN(5,4,0)
 			Skeleton->AddSmartNameAndModify(USkeleton::AnimCurveMappingName, Name, NewName);
+#else
+			Skeleton->AddCurveMetaData(Name);
+#endif
 
-			FAnimationCurveIdentifier CurveId(NewName, ERawCurveTrackTypes::RCT_Float);
+			//FAnimationCurveIdentifier CurveId(NewName, ERawCurveTrackTypes::RCT_Float);
+			FAnimationCurveIdentifier CurveId(Name, ERawCurveTrackTypes::RCT_Float);
 			adc.AddCurve(CurveId);
 
 			const FFloatCurve* NewCurve = DestSeq->GetDataModel()->FindFloatCurve(CurveId);
@@ -2181,8 +2220,8 @@ FTransform UVmdFactory::CalcGlbTransformFromBoneIndex(
 		return FTransform::Identity;
 	}
 
-	auto& dat = DestSeq->GetDataModel()->GetBoneAnimationTracks()[BoneIndex].InternalTrackData;
-
+	//auto& dat = DestSeq->GetDataModel()->GetBoneAnimationTracks()[BoneIndex].InternalTrackData;
+	FRawAnimSequenceTrack RawTrack; 
 	FTransform resultTrans(
 		FQuat(dat.RotKeys[keyIndex]),// qt.X, qt.Y, qt.Z, qt.W),
 		FVector(dat.PosKeys[keyIndex]),
