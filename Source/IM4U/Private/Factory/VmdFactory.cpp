@@ -2223,9 +2223,9 @@ FTransform UVmdFactory::CalcGlbTransformFromBoneIndex(
 	//auto& dat = DestSeq->GetDataModel()->GetBoneAnimationTracks()[BoneIndex].InternalTrackData;
 	FRawAnimSequenceTrack RawTrack; 
 	FTransform resultTrans(
-		FQuat(dat.RotKeys[keyIndex]),// qt.X, qt.Y, qt.Z, qt.W),
-		FVector(dat.PosKeys[keyIndex]),
-		FVector(dat.ScaleKeys[keyIndex])
+		FQuat(RawTrack.RotKeys[keyIndex]),// qt.X, qt.Y, qt.Z, qt.W),
+		FVector(RawTrack.PosKeys[keyIndex]),
+		FVector(RawTrack.ScaleKeys[keyIndex])
 	);
 
 	int ParentBoneIndex = Skeleton->GetReferenceSkeleton().GetParentIndex(BoneIndex);
