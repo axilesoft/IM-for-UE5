@@ -746,10 +746,10 @@ bool UVmdFactory::ImportMorphCurveToAnimSequence(
 		//original
 		FName Name = *vmdFaceTrackPtr->TrackName;
 /*
-#if 0	/* under ~UE4.10*/
+#if 0	//under ~UE4.10
 		FSmartNameMapping* NameMapping 
 			//= Skeleton->SmartNames.GetContainer(USkeleton::AnimCurveMappingName); 
-#else	/* UE4.11~ over */
+#else	//UE4.11~ over
 		const FSmartNameMapping* NameMapping
 			//= const_cast<FSmartNameMapping*>(Skeleton->GetSmartNameContainer(USkeleton::AnimCurveMappingName));//UE4.11~
 			= Skeleton->GetSmartNameContainer(USkeleton::AnimCurveMappingName);//UE4.11~
