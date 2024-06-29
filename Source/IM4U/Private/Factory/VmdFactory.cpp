@@ -209,7 +209,7 @@ UObject* UVmdFactory::FactoryCreateBinary
 注意：新規Asset生成はIKなど未対応の為非推奨。追加Morphのみ対応。"
 			)
 			);
-#if UE_VERSION_OLDER_THAN(5,4,0)	
+#if UE_VERSION_OLDER_THAN(5,3,0)	
 		FMessageDialog::Open(EAppMsgType::Ok, MessageDbg, &TitleStr);
 #else
 		FMessageDialog::Open(EAppMsgType::Ok, MessageDbg);
@@ -235,7 +235,7 @@ InportOption画面にて指定することで取り込むことが可能です�
 			)
 			, FText::FromString(vmdMotionInfo.ModelName)
 			);
-#if UE_VERSION_OLDER_THAN(5,4,0)
+#if UE_VERSION_OLDER_THAN(5,3,0)
 		FMessageDialog::Open(EAppMsgType::Ok, MessageDbg, &TitleStr);
 #else
 		FMessageDialog::Open(EAppMsgType::Ok, MessageDbg);
@@ -303,7 +303,7 @@ Retry ImportOption!"
 						)
 							, FText::FromString(vmdMotionInfo.ModelName)
 						);
-#if UE_VERSION_OLDER_THAN(5,4,0)
+#if UE_VERSION_OLDER_THAN(5,3,0)
 					FMessageDialog::Open(EAppMsgType::Ok, MessageDbg, &TitleStr);
 #else
 					FMessageDialog::Open(EAppMsgType::Ok, MessageDbg);
@@ -557,7 +557,7 @@ UAnimSequence * UVmdFactory::ImportAnimations(
 			//Controller.SetPlayLength(AbcFile->GetImportLength());
 			//Controller.SetFrameRate(FFrameRate(AbcFile->GetFramerate(), 1));
 
-#if UE_VERSION_OLDER_THAN(5,4,0)
+#if UE_VERSION_OLDER_THAN(5,3,0)
 			adc.UpdateCurveNamesFromSkeleton(Skeleton, ERawCurveTrackTypes::RCT_Float);
 #else
 			adc.UpdateAttributesFromSkeleton(Skeleton);
@@ -675,7 +675,7 @@ UAnimSequence * UVmdFactory::AddtionalMorphCurveImportToAnimations(
 			//Controller.SetPlayLength(AbcFile->GetImportLength());
 			//Controller.SetFrameRate(FFrameRate(AbcFile->GetFramerate(), 1));
 
-#if UE_VERSION_OLDER_THAN(5,4,0)
+#if UE_VERSION_OLDER_THAN(5,3,0)
 			adc.UpdateCurveNamesFromSkeleton(Skeleton, ERawCurveTrackTypes::RCT_Float);
 #else
 			adc.UpdateAttributesFromSkeleton(Skeleton);
@@ -849,7 +849,7 @@ bool UVmdFactory::ImportMorphCurveToAnimSequence(
 #else
 		if (vmdFaceTrackPtr->keyList.Num() > 1) {
 			//FSmartName NewName;
-#if UE_VERSION_OLDER_THAN(5,4,0)
+#if UE_VERSION_OLDER_THAN(5,3,0)
 			Skeleton->AddSmartNameAndModify(USkeleton::AnimCurveMappingName, Name, NewName);
 #else
 			Skeleton->AddCurveMetaData(Name);
