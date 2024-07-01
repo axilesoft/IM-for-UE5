@@ -62,21 +62,21 @@ namespace UnrealBuildTool.Rules
 				PublicAdditionalLibraries.Add("/usr/lib/libiconv.dylib");
 			}
 
-			string LibGLMPath = Path.Combine(ThirdPartyPath, "glm");
+			string LibGlmPath = Path.Combine(ThirdPartyPath, "glm");
 
-            PublicIncludePaths.AddRange(
+            /*PublicIncludePaths.AddRange(
                 new string[] {
-					// ... add public include paths required here ...
-					"ControlRig/Public",
+                    // ... add public include paths required here ...
+                    "ControlRig/Public",
                     "ControlRigDeveloper/Public",
                     "ControlRigEditor/Public"
                 }
-				);
+				);*/
 
 			PrivateIncludePaths.AddRange(
                 new string[] {
                     "IM4U/Private",
-                    LibGLMPath
+                    LibGlmPath
 					// ... add other private include paths required here ...
 				}
                 );
@@ -84,8 +84,6 @@ namespace UnrealBuildTool.Rules
 			PublicDependencyModuleNames.AddRange(
 				new string[]
 				{
-
-
 					"Core",
 					"CoreUObject",
 					"Engine", 
@@ -98,14 +96,15 @@ namespace UnrealBuildTool.Rules
 					"MessageLog",
 					"MainFrame",
 					"PropertyEditor",
-                    "RHI",
-                    "RenderCore",
-                    "ContentBrowser",
+					"RHI",
+					"RenderCore",
+					"ContentBrowser",
 					"AnimationDataController",
-
-                    "PhysicsUtilities","SkeletalMeshUtilitiesCommon",
-                    "ControlRig",
-                    "ControlRigEditor","ControlRigDeveloper",
+					"PhysicsUtilities",
+					"SkeletalMeshUtilitiesCommon",
+					"ControlRig",
+					"ControlRigEditor",
+					"ControlRigDeveloper"
 					// ... add other public dependencies that you statically link with here ...
 				}
 				);
